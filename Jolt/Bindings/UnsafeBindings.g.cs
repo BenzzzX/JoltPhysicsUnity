@@ -4,7 +4,7 @@ using Unity.Mathematics;
 
 namespace Jolt
 {
-    internal enum JPH_SpringMode
+    public enum JPH_SpringMode
     {
         JPH_SpringMode_FrequencyAndDamping = 0,
         JPH_SpringMode_StiffnessAndDamping = 1,
@@ -12,7 +12,7 @@ namespace Jolt
         _JPH_SpringMode_Force32 = 0x7FFFFFFF,
     }
 
-    internal partial struct JPH_SpringSettings
+    public partial struct JPH_SpringSettings
     {
         public JPH_SpringMode mode;
 
@@ -21,7 +21,7 @@ namespace Jolt
         public float damping;
     }
 
-    internal partial struct JPH_MotorSettings
+    public partial struct JPH_MotorSettings
     {
         public JPH_SpringSettings springSettings;
 

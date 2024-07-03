@@ -67,6 +67,26 @@ namespace Jolt
         {
             return new BodyInterface(JPH_PhysicsSystem_GetBodyInterfaceNoLock(Handle));
         }
+        
+        public BodyLockInterface GetBodyLockInterface()
+        {
+            return new BodyLockInterface(JPH_PhysicsSystem_GetBodyLockInterface(Handle));
+        }
+        
+        public BodyLockInterface GetBodyLockInterfaceNoLock()
+        {
+            return new BodyLockInterface(JPH_PhysicsSystem_GetBodyLockInterfaceNoLock(Handle));
+        }
+        
+        public void AddConstraint<T>(T constraint) where T : IConstraint
+        {
+            JPH_PhysicsSystem_AddConstraint(Handle, constraint.Handle.Reinterpret<JPH_Constraint>());
+        }
+        
+        public void RemoveConstraint<T>(T constraint) where T : IConstraint
+        {
+            JPH_PhysicsSystem_RemoveConstraint(Handle, constraint.Handle.Reinterpret<JPH_Constraint>());
+        }
 
         public void SetContactListener(IContactListener listener)
         {

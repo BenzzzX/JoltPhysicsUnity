@@ -70,7 +70,7 @@ float4x4=Unity.Mathematics
 rmatrix4x4=Jolt
 quaternion=Unity.Mathematics
 --with-access-specifier
-*=internal
+*=public
 --nativeTypeNamesToStrip
 uint32_t
 JPH_Bool32

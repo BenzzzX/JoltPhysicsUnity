@@ -221,19 +221,23 @@ internal class JoltSourceGenerator : ISourceGenerator
 
                 var type = p.Type.ToString();
                 var name = p.Identifier.ValueText;
+          
+                var isOut = p.Modifiers.Any(SyntaxKind.OutKeyword);
+                var isRef = p.Modifiers.Any(SyntaxKind.RefKeyword);
+                var modifier = isOut ? "out " : isRef ? "ref " : "";
 
                 if (type.StartsWith("NativeHandle"))
                 {
                     var nativeGenericType = ExtractGenericHandleType(type);
                     var publicWrapperType = nativeGenericType.Substring("JPH_".Length);
 
-                    proxiedArgs.Add($"{name}.Handle");
-                    declareArgs.Add($"{publicWrapperType} {name}");
+                    proxiedArgs.Add($"{modifier}{name}.Handle");
+                    declareArgs.Add($"{modifier}{publicWrapperType} {name}");
                 }
                 else
                 {
-                    proxiedArgs.Add(name);
-                    declareArgs.Add($"{type} {name}");
+                    proxiedArgs.Add($"{modifier}{name}");
+                    declareArgs.Add($"{modifier}{type} {name}");
                 }
             }
 

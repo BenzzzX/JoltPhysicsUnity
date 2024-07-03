@@ -47,6 +47,7 @@ namespace Jolt.Samples
 
         private PhysicsSystem system;
         private BodyInterface bodies;
+        private BodyLockInterface bodyLock;
 
         private List<(BodyID, GameObject)> managedGameObjects = new();
 
@@ -89,19 +90,57 @@ namespace Jolt.Samples
 
             system = new PhysicsSystem(settings);
             bodies = system.GetBodyInterface();
+            bodyLock = system.GetBodyLockInterfaceNoLock();
 
             foreach (var addon in GetComponents<IPhysicsSystemAddon>())
             {
                 addon.Initialize(system); // initialize any adjacent addons
             }
 
-            foreach (var authoring in FindObjectsByType<PhysicsBody>(FindObjectsSortMode.None))
+            var authorings = FindObjectsByType<PhysicsBody>(FindObjectsSortMode.None);
+            foreach (var authoring in authorings)
             {
                 var bodyID = PhysicsHelpers.CreateBodyFromGameObject(bodies, authoring.gameObject);
                 managedGameObjects.Add((bodyID, authoring.gameObject));
             }
 
+            foreach (var authoring in authorings)
+            {
+                IPhysicsConstraintComponent constraint = authoring.gameObject.GetComponent<IPhysicsConstraintComponent>();
+                if (constraint != null)
+                {
+                    CreateConstraint(constraint);
+                }
+            }
+            
+
             system.OptimizeBroadPhase();
+        }
+
+        private void CreateConstraint(IPhysicsConstraintComponent c)
+        {
+            if (c is PhysicsHingeConstraint hinge)
+            {
+                var settings = HingeConstraintSettings.Create();
+                settings.SetPoint1(hinge.Point1);
+                settings.SetPoint2(hinge.Point2);
+                settings.SetHingeAxis1(hinge.HingeAxis1);
+                settings.SetHingeAxis2(hinge.HingeAxis2);
+                settings.SetNormalAxis1(hinge.NormalAxis1);
+                var bodyAID = GetBodyID(hinge.gameObject);
+                var bodyBID = GetBodyID(hinge.ConnectedBody.gameObject);
+                HingeConstraint constraint;
+                using(var lockA = bodyLock.LockRead(bodyAID.Value))
+                using(var lockB = bodyLock.LockRead(bodyBID.Value))
+                {
+                    constraint = settings.CreateConstraint(lockA.Body, lockB.Body);
+                }
+                constraint.SetLimits(hinge.LimitsMin, hinge.LimitsMax);
+                constraint.SetLimitsSpringSettings(hinge.LimitsSpringSettings);
+                constraint.SetMaxFrictionTorque(hinge.MaxFrictionTorque);
+                constraint.SetMotorSettings(hinge.MotorSettings);
+                system.AddConstraint(constraint);
+            }
         }
 
         private void FixedUpdate()
