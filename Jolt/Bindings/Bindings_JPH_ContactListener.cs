@@ -45,9 +45,9 @@ namespace Jolt
 
         private delegate ValidateResult UnsafeContactValidate(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB, double3* offset, JPH_CollideShapeResult* result);
 
-        private delegate void UnsafeContactAdded(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB);
+        private delegate void UnsafeContactAdded(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB, JPH_ContactManifold* manifold, JPH_ContactSettings* settings);
 
-        private delegate void UnsafeContactPersisted(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB);
+        private delegate void UnsafeContactPersisted(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB, JPH_ContactManifold* manifold, JPH_ContactSettings* settings);
 
         private delegate void UnsafeContactRemoved(IntPtr udata, JPH_SubShapeIDPair* pair);
 
@@ -65,11 +65,11 @@ namespace Jolt
             return ValidateResult.AcceptContact;
         }
 
-        private static void UnsafeContactAddedCallback(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB)
+        private static void UnsafeContactAddedCallback(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB, JPH_ContactManifold* manifold, JPH_ContactSettings* settings)
         {
             try
             {
-                managedContactListeners[udata]?.OnContactAdded();
+                managedContactListeners[udata]?.OnContactAdded(new Body(new NativeHandle<JPH_Body>(bodyA)), new Body(new NativeHandle<JPH_Body>(bodyB)), new ContactSettings(new NativeHandle<JPH_ContactSettings>(settings)));
             }
             catch (Exception e)
             {
@@ -89,11 +89,11 @@ namespace Jolt
             }
         }
 
-        private static void UnsafeContactPersistedCallback(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB)
+        private static void UnsafeContactPersistedCallback(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB, JPH_ContactManifold* manifold, JPH_ContactSettings* settings)
         {
             try
             {
-                managedContactListeners[udata]?.OnContactPersisted();
+                managedContactListeners[udata]?.OnContactPersisted(new Body(new NativeHandle<JPH_Body>(bodyA)), new Body(new NativeHandle<JPH_Body>(bodyB)), new ContactSettings(new NativeHandle<JPH_ContactSettings>(settings)));
             }
             catch (Exception e)
             {

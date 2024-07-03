@@ -50,6 +50,19 @@ namespace Jolt.Samples
 
         private List<(BodyID, GameObject)> managedGameObjects = new();
 
+        public BodyID? GetBodyID(GameObject gobj)
+        {
+            foreach (var (bodyID, gameObject) in managedGameObjects)
+            {
+                if (gameObject == gobj)
+                {
+                    return bodyID;
+                }
+            }
+
+            return null;
+        }
+
         private void Start()
         {
             var objectLayerPairFilter = ObjectLayerPairFilterTable.Create(ObjectLayers.NumLayers);
