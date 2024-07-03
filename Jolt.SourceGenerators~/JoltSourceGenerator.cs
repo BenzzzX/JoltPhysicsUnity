@@ -189,6 +189,8 @@ internal class JoltSourceGenerator : ISourceGenerator
     {
         if (!bindings.BindingsByNativeType.TryGetValue(prefix, out var bindingsWithPrefix))
         {
+            WritePaddedLine(writer, $"#region {prefix}");
+            WritePaddedLine(writer, "#endregion");
             return; // no bindings exist for this prefix
         }
 
