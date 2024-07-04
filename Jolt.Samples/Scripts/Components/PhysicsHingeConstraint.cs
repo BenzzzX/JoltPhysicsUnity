@@ -3,58 +3,7 @@ using UnityEngine;
 
 namespace Jolt.Samples
 {
-    public enum SpringMode
-    {
-        FrequencyAndDamping,
-        StiffnessAndDamping
-    }
-    [System.Serializable]
-    public struct SpringSettings
-    {
-        SpringMode Mode;
-        public float FrequencyOrStiffness;
-        public float Damping;
-        public static SpringSettings Default => new SpringSettings { Mode = SpringMode.FrequencyAndDamping, FrequencyOrStiffness = 0, Damping = 0 };
-        
-        public static implicit operator JPH_SpringSettings(SpringSettings settings)
-        {
-            return new JPH_SpringSettings
-            {
-                mode = settings.Mode == SpringMode.FrequencyAndDamping ? JPH_SpringMode.JPH_SpringMode_FrequencyAndDamping : JPH_SpringMode.JPH_SpringMode_StiffnessAndDamping,
-                frequencyOrStiffness = settings.FrequencyOrStiffness,
-                damping = settings.Damping
-            };
-        }
-    }
-    [System.Serializable]
-    public struct MotorSettings
-    {
-        public SpringSettings SpringSettings;
-        public float MinForceLimit;
-        public float MaxForceLimit;
-        public float MinTorqueLimit;
-        public float MaxTorqueLimit;
-        public static MotorSettings Default => new MotorSettings
-        {
-            SpringSettings = new SpringSettings { FrequencyOrStiffness = 2, Damping = 1 },
-            MinForceLimit = -math.INFINITY,
-            MaxForceLimit = math.INFINITY,
-            MinTorqueLimit = -math.INFINITY,
-            MaxTorqueLimit = math.INFINITY
-        };
-        
-        public static implicit operator JPH_MotorSettings(MotorSettings settings)
-        {
-            return new JPH_MotorSettings
-            {
-                springSettings = settings.SpringSettings,
-                minForceLimit = settings.MinForceLimit,
-                maxForceLimit = settings.MaxForceLimit,
-                minTorqueLimit = settings.MinTorqueLimit,
-                maxTorqueLimit = settings.MaxTorqueLimit
-            };
-        }
-    }
+    [RequireComponent(typeof(PhysicsBody))]
     public class PhysicsHingeConstraint : MonoBehaviour, IPhysicsConstraintComponent
     {
         public PhysicsBody ConnectedBody;
@@ -67,10 +16,49 @@ namespace Jolt.Samples
         public float3 HingeAxis2 = new float3(0, 1, 0);
         public float3 NormalAxis2 = new float3(0, 0, 1);
 
-        public float LimitsMin = -math.PI;
-        public float LimitsMax = math.PI;
+        public float LimitsMin = -360;
+        public float LimitsMax = 360;
         public SpringSettings LimitsSpringSettings = SpringSettings.Default;
         public float MaxFrictionTorque = 0;
         public MotorSettings MotorSettings = MotorSettings.Default;
+        
+        private HingeConstraint? constraint;
+        public HingeConstraint Constraint => constraint.Value;
+        public bool IsCreated => constraint.HasValue;
+        
+        public void CreateConstraint(PhysicsSystem system)
+        {
+            var bodyID = GetComponent<PhysicsBody>().BodyID;
+            if (ConnectedBody == null)
+            {
+                Debug.LogError("ConnectedBody is null");
+                return;
+            }
+            var connectedBodyID = ConnectedBody.BodyID;
+            if (!connectedBodyID.HasValue)
+            {
+                Debug.LogError("ConnectedBody does not have a BodyID");
+                return;
+            }
+            
+            var settings = HingeConstraintSettings.Create();
+            settings.SetSpace(Space);
+            settings.SetPoint1(Point1);
+            settings.SetPoint2(Point2);
+            settings.SetHingeAxis1(HingeAxis1);
+            settings.SetHingeAxis2(HingeAxis2);
+            settings.SetNormalAxis1(NormalAxis1);
+            settings.SetLimits(math.radians(LimitsMin), math.radians(LimitsMax));
+            settings.SetLimitsSpringSettings(LimitsSpringSettings);
+            settings.SetMaxFrictionTorque(MaxFrictionTorque);
+            settings.SetMotorSettings(MotorSettings);
+            var locker = system.GetBodyLockInterfaceNoLock();
+            using (var lockA = locker.LockRead(bodyID.Value))
+            using (var lockB = locker.LockRead(connectedBodyID.Value))
+            {
+                constraint = settings.CreateConstraint(lockA.Body, lockB.Body);
+                system.AddConstraint(constraint.Value);
+            }
+        }
     }
 }

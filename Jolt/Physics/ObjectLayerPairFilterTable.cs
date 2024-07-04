@@ -3,7 +3,7 @@ using static Jolt.Bindings;
 
 namespace Jolt
 {
-    [GenerateHandle]
+    [GenerateHandle, GenerateBindings("JPH_ObjectLayerPairFilterTable")]
     public readonly partial struct ObjectLayerPairFilterTable
     {
         internal readonly NativeHandle<JPH_ObjectLayerPairFilter> Handle;
@@ -13,11 +13,11 @@ namespace Jolt
             Handle = handle;
         }
 
-        public static ObjectLayerPairFilterTable Create(uint numObjectLayers)
+        [OverrideBinding("JPH_ObjectLayerPairFilterTable_Create")]
+        public static ObjectLayerPairFilterTable Create(uint numLayers)
         {
-            return new ObjectLayerPairFilterTable(JPH_ObjectLayerPairFilterTable_Create(numObjectLayers));
+            return new ObjectLayerPairFilterTable(JPH_ObjectLayerPairFilterTable_Create(numLayers));
         }
-
 
         /// <summary>
         /// Implicit reinterpret cast as a base ObjectLayerPairFilter.
@@ -26,24 +26,5 @@ namespace Jolt
         {
             return new ObjectLayerPairFilter(table.Handle);
         }
-
-        #region JPH_ObjectLayerPairFilterTable
-
-        public void EnableCollision(ObjectLayer layerA, ObjectLayer layerB)
-        {
-            JPH_ObjectLayerPairFilterTable_EnableCollision(Handle, layerA, layerB);
-        }
-
-        public void DisableCollision(ObjectLayer layerA, ObjectLayer layerB)
-        {
-            JPH_ObjectLayerPairFilterTable_DisableCollision(Handle, layerA, layerB);
-        }
-
-        public bool ShouldCollide(ObjectLayer layerA, ObjectLayer layerB)
-        {
-            return JPH_ObjectLayerPairFilterTable_ShouldCollide(Handle, layerA, layerB);
-        }
-
-        #endregion
     }
 }

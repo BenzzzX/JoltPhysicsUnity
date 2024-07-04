@@ -4,7 +4,7 @@ using static Jolt.Bindings;
 namespace Jolt
 {
     [GenerateHandle, GenerateBindings("JPH_ShapeSettings"), GenerateBindings("JPH_ConvexShapeSettings"), GenerateBindings("JPH_CapsuleShapeSettings")]
-    public readonly partial struct CapsuleShapeSettings : IConvexShapeSettings
+    public readonly partial struct CapsuleShapeSettings : IConvexShapeSettings, IDisposable
     {
         internal readonly NativeHandle<JPH_CapsuleShapeSettings> Handle;
 
@@ -18,11 +18,10 @@ namespace Jolt
         {
             return new CapsuleShapeSettings(JPH_CapsuleShapeSettings_Create(halfHeightOfCylinder, radius));
         }
-
-        [OverrideBinding("JPH_CapsuleShapeSettings_CreateShape")]
-        public CapsuleShape CreateShape()
+        
+        void IDisposable.Dispose()
         {
-            throw new NotImplementedException(); // TODO JPH_CapsuleShapeSettings_CreateShape is missing from bindings?
+            Destroy();
         }
     }
 }

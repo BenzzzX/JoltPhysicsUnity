@@ -16,7 +16,7 @@ namespace Jolt
         [OverrideBinding("JPH_BoxShape_Create")]
         public BoxShape Create(float3 halfExtent, float convexRadius = PhysicsSettings.DefaultConvexRadius)
         {
-            return new BoxShape(JPH_BoxShape_Create(halfExtent, convexRadius));
+            return new BoxShape(Bindings.JPH_BoxShape_Create(halfExtent, convexRadius));
         }
 
         [OverrideBinding("JPH_Shape_GetVolume"), OverrideBinding("JPH_BoxShape_GetVolume")]

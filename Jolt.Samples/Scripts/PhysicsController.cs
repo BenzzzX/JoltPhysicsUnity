@@ -1,8 +1,18 @@
 using System.Collections.Generic;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Jobs;
 
 namespace Jolt.Samples
 {
+    public enum PhysicsSamplesLayers : ushort
+    {
+        Static = 1,
+        Moving = 1,
+    }
     public class PhysicsController : MonoBehaviour
     {
         /// <summary>
@@ -49,23 +59,48 @@ namespace Jolt.Samples
         private BodyInterface bodies;
         private BodyLockInterface bodyLock;
 
-        private List<(BodyID, GameObject)> managedGameObjects = new();
-
-        public BodyID? GetBodyID(GameObject gobj)
+        List<PhysicsBody> managedGameObjects;
+        NativeList<BodyID> bodyIds;
+        TransformAccessArray transforms;
+        
+        
+        public static BodyID CreateBodyFromGameObject(BodyInterface bodies, GameObject gobj)
         {
-            foreach (var (bodyID, gameObject) in managedGameObjects)
+            var body = gobj.GetComponent<PhysicsBody>();
+
+            Debug.Assert(body != null, "The GameObject must have a PhysicsBody component.");
+
+            gobj.TryGetComponent(out IPhysicsShapeComponent shapeComponent);
+            if(shapeComponent == null)
             {
-                if (gameObject == gobj)
-                {
-                    return bodyID;
-                }
+                shapeComponent = gobj.AddComponent<PhysicsShapeCompound>();
             }
 
-            return null;
+            var shape = shapeComponent.ShapeSettings;
+
+            var pos = (float3) body.transform.position;
+            var rot = (quaternion) body.transform.rotation;
+
+            var layer = body.MotionType == MotionType.Static
+                ? (ushort)PhysicsSamplesLayers.Static
+                : (ushort)PhysicsSamplesLayers.Moving;
+
+            var activation = body.MotionType == MotionType.Static
+                ? Activation.DontActivate
+                : Activation.Activate;
+
+            var settings = BodyCreationSettings.FromShapeSettings(
+                shape, pos, rot, body.MotionType, layer
+            );
+
+            return bodies.CreateAndAddBody(settings, activation);
         }
 
         private void Start()
         {
+            managedGameObjects = new();
+            bodyIds = new NativeList<BodyID>();
+            transforms = new TransformAccessArray();
             var objectLayerPairFilter = ObjectLayerPairFilterTable.Create(ObjectLayers.NumLayers);
 
             objectLayerPairFilter.EnableCollision(ObjectLayers.Static, ObjectLayers.Moving);
@@ -97,17 +132,20 @@ namespace Jolt.Samples
                 addon.Initialize(system); // initialize any adjacent addons
             }
 
-            var authorings = FindObjectsByType<PhysicsBody>(FindObjectsSortMode.None);
-            foreach (var authoring in authorings)
+            managedGameObjects.AddRange(FindObjectsByType<PhysicsBody>(FindObjectsSortMode.None));
+            transforms = new TransformAccessArray(managedGameObjects.Count);
+            bodyIds = new NativeList<BodyID>(managedGameObjects.Count, Allocator.Persistent);
+            foreach (var authoring in managedGameObjects)
             {
-                var bodyID = PhysicsHelpers.CreateBodyFromGameObject(bodies, authoring.gameObject);
-                managedGameObjects.Add((bodyID, authoring.gameObject));
+                authoring.BodyID = CreateBodyFromGameObject(bodies, authoring.gameObject);
+                transforms.Add(authoring.transform);
+                bodyIds.Add(authoring.BodyID.Value);
             }
 
-            foreach (var authoring in authorings)
+            foreach (var authoring in managedGameObjects)
             {
-                IPhysicsConstraintComponent constraint = authoring.gameObject.GetComponent<IPhysicsConstraintComponent>();
-                if (constraint != null)
+                IPhysicsConstraintComponent[] constraints = authoring.gameObject.GetComponents<IPhysicsConstraintComponent>();
+                foreach(var constraint in constraints)
                 {
                     CreateConstraint(constraint);
                 }
@@ -119,28 +157,7 @@ namespace Jolt.Samples
 
         private void CreateConstraint(IPhysicsConstraintComponent c)
         {
-            if (c is PhysicsHingeConstraint hinge)
-            {
-                var settings = HingeConstraintSettings.Create();
-                settings.SetPoint1(hinge.Point1);
-                settings.SetPoint2(hinge.Point2);
-                settings.SetHingeAxis1(hinge.HingeAxis1);
-                settings.SetHingeAxis2(hinge.HingeAxis2);
-                settings.SetNormalAxis1(hinge.NormalAxis1);
-                var bodyAID = GetBodyID(hinge.gameObject);
-                var bodyBID = GetBodyID(hinge.ConnectedBody.gameObject);
-                HingeConstraint constraint;
-                using(var lockA = bodyLock.LockRead(bodyAID.Value))
-                using(var lockB = bodyLock.LockRead(bodyBID.Value))
-                {
-                    constraint = settings.CreateConstraint(lockA.Body, lockB.Body);
-                }
-                constraint.SetLimits(hinge.LimitsMin, hinge.LimitsMax);
-                constraint.SetLimitsSpringSettings(hinge.LimitsSpringSettings);
-                constraint.SetMaxFrictionTorque(hinge.MaxFrictionTorque);
-                constraint.SetMotorSettings(hinge.MotorSettings);
-                system.AddConstraint(constraint);
-            }
+            c.CreateConstraint(system);
         }
 
         private void FixedUpdate()
@@ -155,16 +172,35 @@ namespace Jolt.Samples
             }
         }
 
+        [BurstCompile]
+        struct UpdateManagedTransformsJob : IJobParallelForTransform
+        {
+            public NativeArray<BodyID> BodyIds;
+            [NativeDisableUnsafePtrRestriction]
+            public BodyLockInterface bodyLock;
+            public void Execute(int index, TransformAccess transform)
+            {
+                using (var l = bodyLock.LockRead(BodyIds[index]))
+                {
+                    var physicsTransform = l.Body.GetWorldTransform();
+                    transform.position = physicsTransform.c3.xyz;
+                    transform.rotation = new quaternion(physicsTransform);
+                }
+            }
+        }
+
         private void UpdateManagedTransforms()
         {
-            foreach (var (bodyID, gobj) in managedGameObjects)
-            {
-                PhysicsHelpers.ApplyTransform(bodies, bodyID, gobj.transform);
-            }
+            UpdateManagedTransformsJob job = new UpdateManagedTransformsJob();
+            job.BodyIds = bodyIds;
+            job.bodyLock = bodyLock;
+            job.Schedule(transforms).Complete();
         }
 
         private void OnDestroy()
         {
+            transforms.Dispose();
+            bodyIds.Dispose();
             system.Dispose();
         }
     }

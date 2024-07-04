@@ -2,7 +2,7 @@
 
 namespace Jolt
 {
-    [GenerateHandle]
+    [GenerateHandle, GenerateBindings("JPH_ObjectVsBroadPhaseLayerFilterMask")]
     public readonly partial struct ObjectVsBroadPhaseLayerFilterMask
     {
         internal readonly NativeHandle<JPH_ObjectVsBroadPhaseLayerFilter> Handle;
@@ -19,14 +19,5 @@ namespace Jolt
         {
             return new ObjectVsBroadPhaseLayerFilter(table.Handle);
         }
-
-        #region JPH_ObjectVsBroadPhaseLayerFilterMask
-
-        public static ObjectVsBroadPhaseLayerFilterMask Create(BroadPhaseLayerInterface @interface)
-        {
-            return new ObjectVsBroadPhaseLayerFilterMask(JPH_ObjectVsBroadPhaseLayerFilterMask_Create(@interface.Handle));
-        }
-
-        #endregion
     }
 }

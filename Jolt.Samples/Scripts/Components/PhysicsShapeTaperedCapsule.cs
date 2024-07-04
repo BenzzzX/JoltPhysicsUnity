@@ -9,5 +9,7 @@ namespace Jolt.Samples
         public float BottomRadius = 0.5f;
 
         public float HalfHeight = 0.5f;
+        
+        public ShapeSettings ShapeSettings => TaperedCapsuleShapeSettings.Create(HalfHeight, TopRadius, BottomRadius);
     }
 }

@@ -5,5 +5,6 @@ namespace Jolt.Samples
     public class PhysicsBody : MonoBehaviour
     {
         public MotionType MotionType;
+        public BodyID? BodyID;
     }
 }

@@ -8,5 +8,7 @@ namespace Jolt.Samples
         public float3 HalfExtent = new (0.5f, 0.5f, 0.5f);
 
         public float ConvexRadius = PhysicsSettings.DefaultConvexRadius;
+        
+        public ShapeSettings ShapeSettings => BoxShapeSettings.Create(HalfExtent, ConvexRadius);
     }
 }

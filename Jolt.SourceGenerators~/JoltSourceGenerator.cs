@@ -3,6 +3,9 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection.Metadata;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -12,6 +15,14 @@ namespace Jolt.SourceGenerators;
 [Generator]
 internal class JoltSourceGenerator : ISourceGenerator
 {
+    static string[] ValueTypeNames = new[] { "float3", "rvec3", "float", "rmatrix4x4", "float4x4", "quaternion", "BodyID", "float4", "AABox", "NativeBool", "MassProperties", "Triangle",
+        "ValidateResult", "JPH_SpringSettings", "JPH_MotorSettings", "JPH_SubShapeIDPair", "JPH_BroadPhaseCastResult",
+        "JPH_RayCastResult", "JPH_CollidePointResult", "JPH_CollideShapeResult", "JPH_ShapeCastResult", "JPH_BodyLockRead", "JPH_BodyLockWrite",
+        "JPH_ExtendedUpdateSettings", "JPH_PhysicsSystemSettings", "JPH_PhysicsSettings",
+        "JPH_BroadPhaseLayerFilter_Procs", "JPH_ObjectLayerFilter_Procs", "JPH_BodyFilter_Procs", "JPH_ContactListener_Procs",
+        "JPH_BodyActivationListener_Procs", "JPH_CharacterContactListener_Procs"};
+    static INamedTypeSymbol NativeTypeAttributeSymbol;
+
     public void Initialize(GeneratorInitializationContext ctx)
     {
         ctx.RegisterForSyntaxNotifications(() => new JoltSyntaxReceiver());
@@ -21,6 +32,7 @@ internal class JoltSourceGenerator : ISourceGenerator
     {
         if (ctx.SyntaxReceiver is not JoltSyntaxReceiver recv) return;
 
+        NativeTypeAttributeSymbol = ctx.Compilation.GetTypeByMetadataName("Jolt.NativeTypeNameAttribute");
         var bindings = IngestNativeBindings(recv);
         var wrappers = CreateNativeTypeWrapperList(recv, ctx);
 
@@ -29,7 +41,7 @@ internal class JoltSourceGenerator : ISourceGenerator
             try
             {
                 var filename = $"{wrapper.TypeName}.g.cs";
-                var filetext = GenerateNativeTypeWrapper(wrapper, bindings);
+                var filetext = GenerateNativeTypeWrapper(ctx, wrapper, bindings);
 
                 ctx.AddSource(filename, filetext);
             }
@@ -47,7 +59,7 @@ internal class JoltSourceGenerator : ISourceGenerator
     {
         var bindings = new JoltNativeBindings();
 
-        foreach (var decl in recv.Bindings)
+        foreach (var decl in recv.UnsafeBindings)
         {
             var parts = decl.Identifier.ValueText.Split('_');
 
@@ -141,7 +153,7 @@ internal class JoltSourceGenerator : ISourceGenerator
         return result;
     }
 
-    private static string GenerateNativeTypeWrapper(JoltNativeTypeWrapper target, JoltNativeBindings bindings)
+    private static string GenerateNativeTypeWrapper(GeneratorExecutionContext ctx, JoltNativeTypeWrapper target, JoltNativeBindings bindings)
     {
         var writer = new IndentedTextWriter(new StringWriter());
 
@@ -151,6 +163,12 @@ internal class JoltSourceGenerator : ISourceGenerator
         writer.WriteLine();
 
         StartBlock(writer, "namespace Jolt");
+
+        foreach (var prefix in target.NativeTypePrefixes)
+        {
+            GenerateSafeBindingsWithPrefix(ctx, writer, target, bindings, prefix);
+        }
+
         StartBlock(writer, $"public partial struct {target.TypeName} : IEquatable<{target.TypeName}>");
 
         GenerateEquatableInterface(writer, target.TypeName);
@@ -185,6 +203,234 @@ internal class JoltSourceGenerator : ISourceGenerator
         WritePaddedLine(writer, "#endregion");
     }
 
+    private static void GenerateSafeBindingsWithPrefix(GeneratorExecutionContext ctx, IndentedTextWriter writer, JoltNativeTypeWrapper target, JoltNativeBindings bindings, string prefix)
+    {
+        if(bindings.wrappedBindings.ContainsKey(prefix))
+        {
+            return;
+        }
+        if (!bindings.BindingsByNativeType.TryGetValue(prefix, out var bindingsWithPrefix))
+        {
+            return;
+        }
+        bindings.wrappedBindings.Add(prefix, true);
+        StartBlock(writer, "internal static unsafe partial class Bindings");
+        foreach (var b in bindingsWithPrefix)
+        {
+            var parameters = new List<string>();
+            var temps = new List<string>();
+            var detemps = new List<string>();
+            string returnType = "void";
+            var arguments = new List<string>();
+            bool returnStruct = false;
+            bool createHandle = false;
+            var proxyParams = new List<string>();
+            var proxyArgs = new List<string>();
+            string proxyReturn = "";
+            int outParamCount = 0;
+            bool isStatic = true;
+            ParameterSyntax outParameter = null;
+
+            for (int i = 0; i < b.BindingDeclaration.ParameterList.Parameters.Count; i++)
+            {
+                var p = b.BindingDeclaration.ParameterList.Parameters[i];
+                Debug.Assert(p.Type != null);
+                //get attribute datas
+                var symbol = ctx.Compilation.GetSemanticModel(p.SyntaxTree).GetDeclaredSymbol(p);
+                var attrs = symbol.GetAttributes();
+                string nativeTypeName = string.Empty;
+                foreach (var attr in attrs)
+                {
+                    if (!attr.AttributeClass.Equals(NativeTypeAttributeSymbol, SymbolEqualityComparer.Default))
+                    {
+                        continue;
+                    }
+
+                    if (attr.ConstructorArguments.IsEmpty)
+                    {
+                        continue;
+                    }
+
+                    nativeTypeName = attr.ConstructorArguments[0].Value?.ToString();
+                }
+                var isArrayPointer = nativeTypeName.EndsWith("[]");
+                var type = p.Type.ToString();
+                var name = p.Identifier.ValueText;
+                var isPointer = p.Type.IsKind(SyntaxKind.PointerType) && !isArrayPointer;
+                var isValueType = isPointer ? ValueTypeNames.Contains(type.Substring(0, type.Length - 1)) : ValueTypeNames.Contains(type);
+                bool isSelf = false;
+                if (i == 0 && isPointer && !isValueType)
+                {
+                    var depointer = type.Substring(0, type.Length - 1);
+                    if(b.BindingDeclaration.Identifier.Text.StartsWith(depointer))
+                    {
+                        proxyArgs.Add($"Handle.Reinterpret<{depointer}>()");
+                        isStatic = false;
+                        isSelf = true;
+                    }
+                }
+                if (isPointer && !isValueType)
+                {
+                    var depointer = type.Substring(0, type.Length - 1);
+                    parameters.Add($"NativeHandle<{depointer}> {name}");
+                    arguments.Add($"{name}");
+
+                    if (!isSelf)
+                    {
+                        var publicWrapperType = depointer.Substring("JPH_".Length);
+                        proxyParams.Add($"{publicWrapperType} {name}");
+                        proxyArgs.Add($"{name}.Handle");
+                    }
+                }
+                else if (isPointer && isValueType)
+                {
+                    if (nativeTypeName.StartsWith("const"))
+                    {
+                        var depointer = type.Substring(0, type.Length - 1);
+                        arguments.Add($"&{name}");
+                        parameters.Add($"{depointer} {name}");
+                        if (!isSelf)
+                        {
+                            proxyParams.Add($"{depointer} {name}");
+                            proxyArgs.Add($"{name}");
+                        }
+                    }
+                    else
+                    {
+                        outParamCount++;
+                        outParameter = p;
+                        var depointer = type.Substring(0, type.Length - 1);
+                        temps.Add($"{depointer} tmp{name};");
+                        detemps.Add($"{name} = tmp{name};");
+                        arguments.Add($"&tmp{name}");
+                        parameters.Add($"out {depointer} {name}");
+
+                        if (!isSelf)
+                        {
+                            proxyParams.Add($"out {depointer} {name}");
+                            proxyArgs.Add($"out {name}");
+                        }
+                    }
+                }
+                else
+                {
+                    arguments.Add($"{name}");
+                    parameters.Add($"{type} {name}");
+                    if (!isSelf)
+                    {
+                        proxyParams.Add($"{type} {name}");
+                        proxyArgs.Add($"{name}");
+                    }
+                }
+            }
+            //transform single out parameter to return value
+            if (outParamCount == 1 && b.BindingDeclaration.ReturnType.ToString() == "void")
+            {
+                temps.Clear();
+                detemps.Clear();
+                var type = outParameter.Type.ToString();
+                var name = outParameter.Identifier.ValueText;
+                var depointer = type.Substring(0, type.Length - 1);
+                temps.Add($"{depointer} result;");
+                for(int i = 0; i < arguments.Count; i++)
+                {
+                    if (arguments[i] == $"&tmp{name}")
+                    {
+                        arguments[i] = $"&result";
+                        break;
+                    }
+                }
+                parameters.Remove($"out {depointer} {name}");
+                proxyArgs.Remove($"out {name}");
+                proxyParams.Remove($"out {depointer} {name}");
+                returnType = depointer;
+                returnStruct = true;
+                proxyReturn = depointer;
+            }
+            if (!returnStruct)
+            {
+                var t = b.BindingDeclaration.ReturnType;
+
+                var type = t.ToString();
+                if (type == "NativeBool")
+                    type = "bool";
+                var isPointer = t.IsKind(SyntaxKind.PointerType);
+                var isValueType = ValueTypeNames.Contains(type);
+                if (isPointer && !isValueType)
+                {
+                    var depointer = type.Substring(0, type.Length - 1);
+                    returnType = $"NativeHandle<{depointer}>";
+                    createHandle = true;
+
+                    var publicWrapperType = depointer.Substring("JPH_".Length);
+                    proxyReturn = publicWrapperType;
+                }
+                else if (isPointer && isValueType)
+                {
+                    var depointer = type.Substring(0, type.Length - 1);
+                    returnType = depointer;
+                    proxyReturn = depointer;
+                }
+                else
+                {
+                    returnType = type;
+                    proxyReturn = type;
+                }
+            }
+            var modifier = isStatic ? "static " : "";
+            if(b.BindingMethodName == "GetType")
+            {
+                modifier = "new " + modifier;
+            }
+            var argsString = string.Join(", ", arguments);
+            var paramsString = string.Join(", ", parameters);
+            var declaration = $"public static {returnType} {b.BindingDeclaration.Identifier.Text}({paramsString})";
+            var proxyDeclaration = $"{modifier}{proxyReturn} {b.BindingMethodName}({string.Join(", ", proxyParams)})";
+            var proxyCall = $"Bindings.{b.BindingDeclaration.Identifier.Text}({string.Join(", ", proxyArgs)})";
+            if(createHandle)
+                proxyCall = $"new {proxyReturn}({proxyCall})";
+            b.WrapperImpl = $"{proxyDeclaration} => {proxyCall};";
+            StartBlock(writer, declaration);
+            foreach (var temp in temps)
+            {
+                WritePaddedLine(writer, temp);
+            }
+            if (returnType == "void")
+            {
+                WritePaddedLine(writer, $"UnsafeBindings.{b.BindingDeclaration.Identifier.Text}({argsString});");
+                foreach (var detemp in detemps)
+                {
+                    WritePaddedLine(writer, detemp);
+                }
+            }
+            else
+            {
+                if (createHandle)
+                {
+                    writer.WriteLine($"return CreateHandle(UnsafeBindings.{b.BindingDeclaration.Identifier.Text}({argsString}));");
+                }
+                else
+                {
+                    if (!returnStruct)
+                    {
+                        WritePaddedLine(writer, $"{returnType} result = UnsafeBindings.{b.BindingDeclaration.Identifier.Text}({argsString});");
+                    }
+                    else
+                    {
+                        WritePaddedLine(writer, $"UnsafeBindings.{b.BindingDeclaration.Identifier.Text}({argsString});");
+                    }
+                    foreach (var detemp in detemps)
+                    {
+                        WritePaddedLine(writer, detemp);
+                    }
+                    WritePaddedLine(writer, "return result;");
+                }
+            }
+            CloseBlock(writer);
+        }
+        CloseBlock(writer);
+    }
+
     private static void GenerateBindingsWithPrefix(IndentedTextWriter writer, JoltNativeTypeWrapper target, JoltNativeBindings bindings, string prefix)
     {
         if (!bindings.BindingsByNativeType.TryGetValue(prefix, out var bindingsWithPrefix))
@@ -198,72 +444,13 @@ internal class JoltSourceGenerator : ISourceGenerator
 
         foreach (var b in bindingsWithPrefix)
         {
+
             if (target.ExcludedBindings.Contains(b.BindingDeclaration.Identifier.ValueText))
             {
                 continue; // target has explicitly excluded this binding
             }
 
-            var proxiedName    = b.BindingDeclaration.Identifier.ValueText;
-            var proxiedArgs    = new List<string> { "Handle" };
-            var proxiedReturns = b.BindingDeclaration.ReturnType.ToString();
-
-            var declareName    = b.BindingMethodName;
-            var declareArgs    = new List<string>();
-            var declareMods    = declareName == "GetType" ? "new " : "";
-            var declareReturns = proxiedReturns;
-
-            // Build the declared parameters and proxied arguments simultaneously. If any of the proxied arguments are
-            // native handles, we use the wrapper type as the parameter type and pass the wrapped handle to the binding.
-
-            foreach (var p in b.BindingDeclaration.ParameterList.Parameters.RemoveAt(0))
-            {
-                Debug.Assert(p.Type != null);
-
-                var type = p.Type.ToString();
-                var name = p.Identifier.ValueText;
-          
-                var isOut = p.Modifiers.Any(SyntaxKind.OutKeyword);
-                var isRef = p.Modifiers.Any(SyntaxKind.RefKeyword);
-                var modifier = isOut ? "out " : isRef ? "ref " : "";
-
-                if (type.StartsWith("NativeHandle"))
-                {
-                    var nativeGenericType = ExtractGenericHandleType(type);
-                    var publicWrapperType = nativeGenericType.Substring("JPH_".Length);
-
-                    proxiedArgs.Add($"{modifier}{name}.Handle");
-                    declareArgs.Add($"{modifier}{publicWrapperType} {name}");
-                }
-                else
-                {
-                    proxiedArgs.Add($"{modifier}{name}");
-                    declareArgs.Add($"{modifier}{type} {name}");
-                }
-            }
-
-            var proxiedBindingArgsString = string.Join(", ", proxiedArgs);
-            var publicBindingParamsString = string.Join(", ", declareArgs);
-
-            var expression = $"Bindings.{proxiedName}({proxiedBindingArgsString})";
-
-            // If the binding return type is a NativeHandle we rewrite some of the expression. We return the public
-            // wrapper type instead and wrap the proxied call with the wrapper constructor.
-
-            if (declareReturns.StartsWith("NativeHandle"))
-            {
-                var nativeGenericType = ExtractGenericHandleType(declareReturns);
-                var publicWrapperType = nativeGenericType.Substring("JPH_".Length);
-
-                declareReturns = publicWrapperType;
-
-                expression = $"new {declareReturns}({expression})";
-            }
-
-            // Interpolate the public declaration.
-
-            var declaration = $"public {declareMods}{declareReturns} {declareName}({publicBindingParamsString})";
-
-            WritePaddedLine(writer, $"{declaration} => {expression};");
+            WritePaddedLine(writer, $"public {b.WrapperImpl}");
         }
 
         WritePaddedLine(writer, "#endregion");
@@ -294,7 +481,6 @@ internal class JoltSourceGenerator : ISourceGenerator
     private static void WritePaddedLine(IndentedTextWriter writer, string line)
     {
         writer.WriteLine(line);
-        writer.WriteLine();
     }
 
     private static void Log(string message)
@@ -316,6 +502,7 @@ internal class JoltSourceGenerator : ISourceGenerator
 internal class JoltNativeBindings
 {
     public readonly Dictionary<string, List<JoltNativeBindingDetails>> BindingsByNativeType = new ();
+    public Dictionary<string, bool> wrappedBindings = new();
 }
 
 /// <summary>
@@ -328,6 +515,8 @@ internal class JoltNativeBindingDetails(string type, string method, MethodDeclar
     public readonly string BindingMethodName = method;
 
     public readonly MethodDeclarationSyntax BindingDeclaration = decl;
+
+    public string WrapperImpl;
 }
 
 /// <summary>

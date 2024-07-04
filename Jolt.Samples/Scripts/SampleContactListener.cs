@@ -23,7 +23,7 @@ namespace Jolt.Samples
             beltBodyIDs.Clear();
             foreach (var belt in belts)
             {
-                var  beltBodyID = GetComponent<PhysicsController>().GetBodyID(belt);
+                var beltBodyID = belt.GetComponent<PhysicsBody>().BodyID;
                 if (beltBodyID.HasValue)
                 {
                     bodies.SetFriction(beltBodyID.Value, 1f);

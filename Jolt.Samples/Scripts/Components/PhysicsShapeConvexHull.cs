@@ -21,5 +21,7 @@ namespace Jolt.Samples
 
             return points;
         }
+        
+        public ShapeSettings ShapeSettings => ConvexHullShapeSettings.Create(BuildMeshPoints(), MaxConvexRadius);
     }
 }

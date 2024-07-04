@@ -37,5 +37,7 @@ namespace Jolt.Samples
 
             return result;
         }
+        
+        public ShapeSettings ShapeSettings => MeshShapeSettings.Create(BuildMeshVertices(), BuildMeshTriangles());
     }
 }

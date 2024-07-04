@@ -3,7 +3,7 @@
     /// <summary>
     /// A uint with implicit bool casting, providing consistent interop with native "bool" uints.
     /// </summary>
-    internal struct NativeBool
+    public struct NativeBool
     {
         public uint Value;
 

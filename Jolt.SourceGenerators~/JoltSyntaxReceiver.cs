@@ -15,7 +15,7 @@ internal class JoltSyntaxReceiver : ISyntaxReceiver
     /// <summary>
     /// The list of method declarations that proxy extern methods.
     /// </summary>
-    public readonly List<MethodDeclarationSyntax> Bindings = new ();
+    public readonly List<MethodDeclarationSyntax> UnsafeBindings = new();
 
     public void OnVisitSyntaxNode(SyntaxNode node)
     {
@@ -32,9 +32,9 @@ internal class JoltSyntaxReceiver : ISyntaxReceiver
 
     private void OnVisitMethodDeclaration(MethodDeclarationSyntax mds)
     {
-        if (mds is { Parent: ClassDeclarationSyntax { Identifier.ValueText: "Bindings" } })
+        if (mds is { Parent: ClassDeclarationSyntax { Identifier.ValueText: "UnsafeBindings" } })
         {
-            Bindings.Add(mds);
+            UnsafeBindings.Add(mds);
         }
     }
 

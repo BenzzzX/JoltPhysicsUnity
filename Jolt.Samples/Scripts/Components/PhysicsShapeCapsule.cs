@@ -7,5 +7,7 @@ namespace Jolt.Samples
         public float Radius = 0.5f;
 
         public float HalfHeight = 0.5f;
+        
+        public ShapeSettings ShapeSettings => CapsuleShapeSettings.Create(HalfHeight, Radius);
     }
 }

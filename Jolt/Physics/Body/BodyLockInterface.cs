@@ -12,7 +12,7 @@ namespace Jolt
         }
         
         unsafe 
-        public Body Body => new (new NativeHandle<JPH_Body>(mLock.body));
+        public Body Body => new (NativeHandle<JPH_Body>.CreateObserveHandle(mLock.body));
 
         unsafe void Release()
         {
@@ -33,7 +33,7 @@ namespace Jolt
         JPH_BodyLockWrite mLock;
         
         unsafe 
-        public Body Body => new Body(new NativeHandle<JPH_Body>(mLock.body));
+        public Body Body => new Body(NativeHandle<JPH_Body>.CreateObserveHandle(mLock.body));
         
         internal BodyLockWrite(JPH_BodyLockWrite lockWrite)
         {
@@ -54,7 +54,7 @@ namespace Jolt
         }
     }
     
-    [GenerateHandle]
+    [GenerateHandle, GenerateBindings("JPH_BodyLockInterface")]
     public readonly partial struct BodyLockInterface
     {
         internal readonly NativeHandle<JPH_BodyLockInterface> Handle;
@@ -64,11 +64,13 @@ namespace Jolt
             Handle = handle;
         }
         
+        [OverrideBinding("JPH_BodyLockInterface_LockRead")]
         public BodyLockRead LockRead(BodyID bodyID)
         {
             return new BodyLockRead(Bindings.JPH_BodyLockInterface_LockRead(Handle, bodyID));
         }
         
+        [OverrideBinding("JPH_BodyLockInterface_LockWrite")]
         public BodyLockWrite LockWrite(BodyID bodyID)
         {
             return new BodyLockWrite(Bindings.JPH_BodyLockInterface_LockWrite(Handle, bodyID));

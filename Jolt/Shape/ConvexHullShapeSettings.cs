@@ -1,11 +1,12 @@
 ﻿using System;
 using Unity.Mathematics;
+using UnityEngine;
 using static Jolt.Bindings;
 
 namespace Jolt
 {
     [GenerateHandle, GenerateBindings("JPH_ShapeSettings"), GenerateBindings("JPH_ConvexShapeSettings"), GenerateBindings("JPH_ConvexHullShapeSettings")]
-    public readonly partial struct ConvexHullShapeSettings : IConvexShapeSettings
+    public readonly partial struct ConvexHullShapeSettings : IConvexShapeSettings, IDisposable
     {
         internal readonly NativeHandle<JPH_ConvexHullShapeSettings> Handle;
 
@@ -15,15 +16,25 @@ namespace Jolt
         }
 
         [OverrideBinding("JPH_ConvexHullShapeSettings_Create")]
-        public static ConvexHullShapeSettings Create(ReadOnlySpan<float3> points, float maxConvexRadius)
+        public static unsafe ConvexHullShapeSettings Create(ReadOnlySpan<float3> points, float maxConvexRadius)
         {
-            return new ConvexHullShapeSettings(JPH_ConvexHullShapeSettings_Create(points, maxConvexRadius));
+            Debug.Assert(points.Length > 0);
+            fixed(float3* pointsPtr = &points.GetPinnableReference())
+            {
+                return new ConvexHullShapeSettings(JPH_ConvexHullShapeSettings_Create(pointsPtr, (uint)points.Length, maxConvexRadius));
+            }
         }
 
         [OverrideBinding("JPH_ConvexHullShapeSettings_CreateShape")]
         public ConvexHullShape CreateShape()
         {
             return new ConvexHullShape(JPH_ConvexHullShapeSettings_CreateShape(Handle));
+        }
+
+
+        public void Dispose()
+        {
+            Destroy();
         }
     }
 }

@@ -5,50 +5,36 @@ namespace Jolt
 {
     internal unsafe struct NativeHandle<T> : IDisposable, IEquatable<NativeHandle<T>> where T : unmanaged
     {
-        #if !JOLT_DISABLE_SAFETY_CHECkS
-        private NativeSafetyHandle safety;
-        #endif
 
         private T* ptr;
-
-        public NativeHandle(T* ptr)
+        
+        public static NativeHandle<T> CreateOwnedHandle(T* ptr) 
         {
-            #if !JOLT_DISABLE_SAFETY_CHECkS
-            safety = NativeSafetyHandle.Create();
-            #endif
-
-            this.ptr = ptr;
+            return new NativeHandle<T> { ptr = ptr };
+        }
+        
+        public static NativeHandle<T> CreateObserveHandle(T* ptr)
+        {
+            return new NativeHandle<T> { ptr = ptr };
         }
 
         /// <summary>
         /// Create a NativeHandle to a new pointer with the same safety handle as this handle. If this handle is disposed of, the owned handle will throw if it is dereferenced.
         /// </summary>
-        public NativeHandle<U> CreateOwnedHandle<U>(U* ptr) where U : unmanaged
+        public NativeHandle<U> CreateSharedHandle<U>(U* ptr) where U : unmanaged
         {
-            #if !JOLT_DISABLE_SAFETY_CHECkS
-            return new NativeHandle<U> { ptr = ptr, safety = safety };
-            #else
             return new NativeHandle<U> { ptr = ptr };
-            #endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly NativeHandle<U> Reinterpret<U>() where U : unmanaged
         {
-            #if !JOLT_DISABLE_SAFETY_CHECkS
-            return new NativeHandle<U> { ptr = (U*) ptr, safety = safety };
-            #else
             return new NativeHandle<U> { ptr = (U*) ptr };
-            #endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly T* IntoPointer()
         {
-            #if !JOLT_DISABLE_SAFETY_CHECkS
-            NativeSafetyHandle.AssertExists(in safety);
-            #endif
-
             return ptr;
         }
 
@@ -62,10 +48,6 @@ namespace Jolt
 
         public void Dispose()
         {
-            #if !JOLT_DISABLE_SAFETY_CHECkS
-            NativeSafetyHandle.Release(safety);
-            #endif
-
             ptr = null;
         }
 
