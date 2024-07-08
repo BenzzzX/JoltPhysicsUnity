@@ -3859,7 +3859,7 @@ void JPH_BodyInterface_GetCenterOfMassTransform(JPH_BodyInterface* interface, JP
     FromJolt(mat, resutlt);
 }
 
-void JPH_BodyInterface_MoveKinematic(JPH_BodyInterface* interface, JPH_BodyID bodyId, JPH_RVec3* targetPosition, JPH_Quat* targetRotation, float deltaTime)
+void JPH_BodyInterface_MoveKinematic(JPH_BodyInterface* interface, JPH_BodyID bodyId, const JPH_RVec3* targetPosition, const JPH_Quat* targetRotation, float deltaTime)
 {
     JPH_ASSERT(interface);
     auto joltBodyInterface = reinterpret_cast<JPH::BodyInterface*>(interface);
@@ -3928,7 +3928,7 @@ void JPH_BodyInterface_GetPointVelocity(JPH_BodyInterface* interface, JPH_BodyID
     FromJolt(result, velocity);
 }
 
-void JPH_BodyInterface_AddForce(JPH_BodyInterface* interface, JPH_BodyID bodyId, JPH_Vec3* force)
+void JPH_BodyInterface_AddForce(JPH_BodyInterface* interface, JPH_BodyID bodyId, const JPH_Vec3* force)
 {
     JPH_ASSERT(interface);
     auto joltBodyInterface = reinterpret_cast<JPH::BodyInterface*>(interface);
@@ -3936,7 +3936,7 @@ void JPH_BodyInterface_AddForce(JPH_BodyInterface* interface, JPH_BodyID bodyId,
     joltBodyInterface->AddForce(JPH::BodyID(bodyId), ToJolt(force));
 }
 
-void JPH_BodyInterface_AddForce2(JPH_BodyInterface* interface, JPH_BodyID bodyId, JPH_Vec3* force, JPH_RVec3* point)
+void JPH_BodyInterface_AddForce2(JPH_BodyInterface* interface, JPH_BodyID bodyId, const JPH_Vec3* force, const JPH_RVec3* point)
 {
     JPH_ASSERT(interface);
     auto joltBodyInterface = reinterpret_cast<JPH::BodyInterface*>(interface);
@@ -3944,7 +3944,7 @@ void JPH_BodyInterface_AddForce2(JPH_BodyInterface* interface, JPH_BodyID bodyId
     joltBodyInterface->AddForce(JPH::BodyID(bodyId), ToJolt(force), ToJolt(point));
 }
 
-void JPH_BodyInterface_AddTorque(JPH_BodyInterface* interface, JPH_BodyID bodyId, JPH_Vec3* torque)
+void JPH_BodyInterface_AddTorque(JPH_BodyInterface* interface, JPH_BodyID bodyId, const JPH_Vec3* torque)
 {
     JPH_ASSERT(interface);
     auto joltBodyInterface = reinterpret_cast<JPH::BodyInterface*>(interface);
@@ -3952,7 +3952,7 @@ void JPH_BodyInterface_AddTorque(JPH_BodyInterface* interface, JPH_BodyID bodyId
     joltBodyInterface->AddTorque(JPH::BodyID(bodyId), ToJolt(torque));
 }
 
-void JPH_BodyInterface_AddForceAndTorque(JPH_BodyInterface* interface, JPH_BodyID bodyId, JPH_Vec3* force, JPH_Vec3* torque)
+void JPH_BodyInterface_AddForceAndTorque(JPH_BodyInterface* interface, JPH_BodyID bodyId, const JPH_Vec3* force, const JPH_Vec3* torque)
 {
     JPH_ASSERT(interface);
     auto joltBodyInterface = reinterpret_cast<JPH::BodyInterface*>(interface);
@@ -3960,7 +3960,7 @@ void JPH_BodyInterface_AddForceAndTorque(JPH_BodyInterface* interface, JPH_BodyI
     joltBodyInterface->AddForceAndTorque(JPH::BodyID(bodyId), ToJolt(force), ToJolt(torque));
 }
 
-void JPH_BodyInterface_AddImpulse(JPH_BodyInterface* interface, JPH_BodyID bodyId, JPH_Vec3* impulse)
+void JPH_BodyInterface_AddImpulse(JPH_BodyInterface* interface, JPH_BodyID bodyId, const JPH_Vec3* impulse)
 {
     JPH_ASSERT(interface);
     auto joltBodyInterface = reinterpret_cast<JPH::BodyInterface*>(interface);
@@ -3968,7 +3968,7 @@ void JPH_BodyInterface_AddImpulse(JPH_BodyInterface* interface, JPH_BodyID bodyI
     joltBodyInterface->AddImpulse(JPH::BodyID(bodyId), ToJolt(impulse));
 }
 
-void JPH_BodyInterface_AddImpulse2(JPH_BodyInterface* interface, JPH_BodyID bodyId, JPH_Vec3* impulse, JPH_RVec3* point)
+void JPH_BodyInterface_AddImpulse2(JPH_BodyInterface* interface, JPH_BodyID bodyId, const JPH_Vec3* impulse, const JPH_RVec3* point)
 {
     JPH_ASSERT(interface);
     auto joltBodyInterface = reinterpret_cast<JPH::BodyInterface*>(interface);
@@ -3976,7 +3976,7 @@ void JPH_BodyInterface_AddImpulse2(JPH_BodyInterface* interface, JPH_BodyID body
     joltBodyInterface->AddImpulse(JPH::BodyID(bodyId), ToJolt(impulse), ToJolt(point));
 }
 
-void JPH_BodyInterface_AddAngularImpulse(JPH_BodyInterface* interface, JPH_BodyID bodyId, JPH_Vec3* angularImpulse)
+void JPH_BodyInterface_AddAngularImpulse(JPH_BodyInterface* interface, JPH_BodyID bodyId, const JPH_Vec3* angularImpulse)
 {
     JPH_ASSERT(interface);
     auto joltBodyInterface = reinterpret_cast<JPH::BodyInterface*>(interface);

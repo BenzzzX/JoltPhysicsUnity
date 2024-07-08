@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Jolt.Samples
 {
     [RequireComponent(typeof(PhysicsBody))]
-    public class PhysicsSwingTwistConstraint : MonoBehaviour, IPhysicsConstraintComponent
+    public class PhysicsConstraintSwingTwist : MonoBehaviour, IPhysicsConstraintComponent
     {
         public PhysicsBody ConnectedBody;
         public ConstraintSpace Space = ConstraintSpace.WorldSpace;

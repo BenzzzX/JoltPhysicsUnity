@@ -684,7 +684,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1553016381}
   - component: {fileID: 1553016380}
-  - component: {fileID: 1553016379}
   - component: {fileID: 1553016378}
   - component: {fileID: 1553016382}
   m_Layer: 0
@@ -711,58 +710,6 @@ MonoBehaviour:
     y: 0.5
     z: 0.5
   ConvexRadius: 0.05
---- !u!114 &1553016379
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1553016377}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5de70091f784a3bbe85f46ed53de70c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ConnectedBody: {fileID: 1008320878}
-  Space: 1
-  Point1:
-    x: 0
-    y: 4.85
-    z: -0.32
-  HingeAxis1:
-    x: 1
-    y: 0
-    z: 0
-  NormalAxis1:
-    x: 0
-    y: 0
-    z: 1
-  Point2:
-    x: 0
-    y: 4.85
-    z: -0.32
-  HingeAxis2:
-    x: 1
-    y: 0
-    z: 0
-  NormalAxis2:
-    x: 0
-    y: 0
-    z: 1
-  LimitsMin: 0
-  LimitsMax: 0
-  LimitsSpringSettings:
-    FrequencyOrStiffness: 10
-    Damping: 0.3
-  MaxFrictionTorque: 0
-  MotorSettings:
-    SpringSettings:
-      FrequencyOrStiffness: 2
-      Damping: 1
-    MinForceLimit: -Infinity
-    MaxForceLimit: Infinity
-    MinTorqueLimit: -Infinity
-    MaxTorqueLimit: Infinity
 --- !u!114 &1553016380
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -812,32 +759,33 @@ MonoBehaviour:
     z: -0.32
   TwistAxis1:
     x: 0
-    y: 1
-    z: 0
+    y: 0
+    z: 1
   PlaneAxis1:
     x: 0
+    y: 1
+    z: 0
+  Position2:
+    x: 0
+    y: 4.85
+    z: -0.32
+  TwistAxis2:
+    x: 0
     y: 0
     z: 1
-  Position2:
-    x: -2.39
-    y: 4.86
-    z: -0.28
-  TwistAxis2:
+  PlaneAxis2:
     x: 0
     y: 1
     z: 0
-  PlaneAxis2:
-    x: 0
-    y: 0
-    z: 1
   SwingType: 0
-  NormalHalfConeAngle: 0
-  PlaneHalfConeAngle: 0
+  NormalHalfConeAngle: 54.63
+  PlaneHalfConeAngle: 30
   TwistMinAngle: 0
   TwistMaxAngle: 0
   MaxFrictionTorque: 0
   SwingMotorSettings:
     SpringSettings:
+      Mode: 0
       FrequencyOrStiffness: 2
       Damping: 1
     MinForceLimit: -Infinity
@@ -846,6 +794,7 @@ MonoBehaviour:
     MaxTorqueLimit: Infinity
   TwistMotorSettings:
     SpringSettings:
+      Mode: 0
       FrequencyOrStiffness: 2
       Damping: 1
     MinForceLimit: -Infinity

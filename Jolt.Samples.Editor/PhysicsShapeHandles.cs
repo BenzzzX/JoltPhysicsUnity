@@ -8,16 +8,46 @@ namespace Jolt.Samples
     {
         private static readonly Color HandleColor = new Color(0.7f, 1f, 0.5f);
 
-        private static void StartHandle(float3 position, quaternion rotation)
+        public static void StartHandle(float3 position, quaternion rotation)
         {
             Handles.color = HandleColor;
             Handles.matrix = Matrix4x4.TRS(position, rotation, Vector3.one);
         }
 
-        private static void ResetHandle()
+        public static void ResetHandle()
         {
             Handles.color = default;
             Handles.matrix = Matrix4x4.identity;
+        }
+
+        public static void DrawAxis(float3 position, float3 forward, float3 up, float length = 3f, float thickness = .1f)
+        {
+            StartHandle(position, quaternion.LookRotation(forward, up));
+            //colored lines
+            Handles.color = Color.red;
+            Handles.DrawLine(float3.zero, math.forward() * length, thickness);
+            Handles.color = Color.green;
+            Handles.DrawLine(float3.zero, math.up() * length, thickness);
+            Handles.color = Color.blue;
+            Handles.DrawLine(float3.zero, math.right() * length, thickness);
+
+            ResetHandle();
+        }
+
+        public static void DrawCone(float3 position, quaternion rotation, float halfAngle, float height)
+        {
+            StartHandle(position, rotation);
+
+            var halfHeight = math.tan(halfAngle) * height;
+
+            Handles.DrawWireArc(float3.zero, math.forward(), math.cross(math.forward(), math.up()), 360f, height);
+            Handles.DrawWireArc(float3.zero, math.up(), math.cross(math.up(), math.forward()), 360f, height);
+
+            Handles.DrawLine(float3.zero, math.forward() * height);
+            Handles.DrawLine(float3.zero, math.up() * halfHeight);
+            Handles.DrawLine(float3.zero, -math.up() * halfHeight);
+
+            ResetHandle();
         }
 
         public static void DrawBoxShape(float3 position, quaternion rotation, PhysicsShapeBox shape)

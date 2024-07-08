@@ -192,7 +192,7 @@ namespace Jolt.Samples
         private void UpdateManagedTransforms()
         {
             UpdateManagedTransformsJob job = new UpdateManagedTransformsJob();
-            job.BodyIds = bodyIds;
+            job.BodyIds = bodyIds.AsArray();
             job.bodyLock = bodyLock;
             job.Schedule(transforms).Complete();
         }
