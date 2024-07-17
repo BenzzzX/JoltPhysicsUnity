@@ -10,7 +10,7 @@ namespace Jolt.Integration
 {
     public enum PhysicsSamplesLayers : ushort
     {
-        Static = 1,
+        Static = 0,
         Moving = 1,
     }
     public class PhysicsController : MonoBehaviour
@@ -52,17 +52,63 @@ namespace Jolt.Integration
             public static readonly BroadPhaseLayer Moving = 1;
             public const uint NumLayers = 2;
         }
+        
+        private static PhysicsController _instance;
+
+        public static PhysicsController Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = FindObjectOfType<PhysicsController>();
+                }
+                return _instance;
+            }
+        }
 
         private const int CollisionSteps = 1;
 
         private PhysicsSystem system;
         private BodyInterface bodies;
         private BodyLockInterface bodyLock;
-
-        List<PhysicsBody> managedGameObjects;
-        NativeList<BodyID> bodyIds;
-        TransformAccessArray transforms;
         
+        public PhysicsSystem System => system;
+        public BodyInterface Bodies => bodies;
+        public BodyLockInterface BodyLock => bodyLock;
+
+        private List<PhysicsBody> managedGameObjects;
+        private NativeList<BodyID> bodyIds;
+        private TransformAccessArray transforms;
+        private Dictionary<BodyID, PhysicsBody> bodyIDToPhysicsBody;
+        
+        private List<PhysicsBody> pendingSpawn = new List<PhysicsBody>();
+        private List<BodyID> pendingDestroy = new List<BodyID>();
+        
+        public void Awake()
+        {
+            _instance = this;
+        }
+        
+        public void Start()
+        {
+            Initialize();
+        }
+        
+        public void FixedUpdate()
+        {
+            Tick(Time.fixedDeltaTime);
+        }
+        
+        public void RegisterSpawn(PhysicsBody gobj)
+        {
+            pendingSpawn.Add(gobj);
+        }
+        
+        public void RegisterDestroy(BodyID bodyID)
+        {
+            pendingDestroy.Add(bodyID);
+        }
         
         public static BodyID CreateBodyFromGameObject(BodyInterface bodies, GameObject gobj)
         {
@@ -93,17 +139,19 @@ namespace Jolt.Integration
                 shape, pos, rot, body.MotionType, layer
             );
             settings.SetAllowedDOFs(body.allowedDoFs);
+            settings.SetIsSensor(body.isSensor);
             var bodyId = bodies.CreateAndAddBody(settings, activation);
             bodies.SetRestitution(bodyId, body.restitution);
             bodies.SetFriction(bodyId, body.friction);
             return bodyId;
         }
 
-        private void Start()
+        public void Initialize()
         {
             managedGameObjects = new();
             bodyIds = new NativeList<BodyID>();
             transforms = new TransformAccessArray();
+            bodyIDToPhysicsBody = new Dictionary<BodyID, PhysicsBody>();
             var objectLayerPairFilter = ObjectLayerPairFilterTable.Create(ObjectLayers.NumLayers);
 
             objectLayerPairFilter.EnableCollision(ObjectLayers.Static, ObjectLayers.Moving);
@@ -135,37 +183,75 @@ namespace Jolt.Integration
                 addon.Initialize(system); // initialize any adjacent addons
             }
 
-            managedGameObjects.AddRange(FindObjectsByType<PhysicsBody>(FindObjectsSortMode.None));
-            transforms = new TransformAccessArray(managedGameObjects.Count);
-            bodyIds = new NativeList<BodyID>(managedGameObjects.Count, Allocator.Persistent);
-            foreach (var authoring in managedGameObjects)
-            {
-                authoring.BodyID = CreateBodyFromGameObject(bodies, authoring.gameObject);
-                transforms.Add(authoring.transform);
-                bodyIds.Add(authoring.BodyID.Value);
-            }
-
-            foreach (var authoring in managedGameObjects)
-            {
-                IPhysicsConstraintComponent[] constraints = authoring.gameObject.GetComponents<IPhysicsConstraintComponent>();
-                foreach(var constraint in constraints)
-                {
-                    CreateConstraint(constraint);
-                }
-            }
-            
-
+            HandleDestroryAndSpawn();
             system.OptimizeBroadPhase();
         }
-
-        private void CreateConstraint(IPhysicsConstraintComponent c)
+        
+        private void HandleDestroryAndSpawn()
         {
-            c.CreateConstraint(system);
+            foreach (var bodyID in pendingDestroy)
+            {
+                bodies.RemoveBody(bodyID);
+                bodies.DestroyBody(bodyID);
+                int id = bodyIds.IndexOf(bodyID);
+                if (id != -1)
+                {
+                    bodyIds.RemoveAtSwapBack(id);
+                    transforms.RemoveAtSwapBack(id);
+                    managedGameObjects.RemoveAtSwapBack(id);
+                    bodyIDToPhysicsBody.Remove(bodyID);
+                }
+                else
+                {
+                    Debug.LogError("Destroying a body that is not in the list.");
+                }
+            }
+            pendingDestroy.Clear();
+
+            if (!bodyIds.IsCreated)
+            {
+                bodyIds = new NativeList<BodyID>(pendingSpawn.Count, Allocator.Persistent);
+                managedGameObjects.Capacity = pendingSpawn.Count;
+                transforms = new TransformAccessArray(pendingSpawn.Count);
+            }
+            else if(!bodyIds.IsCreated || bodyIds.Capacity < bodyIds.Length + pendingSpawn.Count)
+            {
+                bodyIds.SetCapacity(bodyIds.Length + pendingSpawn.Count);
+                managedGameObjects.Capacity = bodyIds.Length + pendingSpawn.Count;
+                transforms.capacity = bodyIds.Length + pendingSpawn.Count;
+            }
+            foreach (var gobj in pendingSpawn)
+            {
+                managedGameObjects.Add(gobj);
+                gobj.BodyID = CreateBodyFromGameObject(bodies, gobj.gameObject);
+                transforms.Add(gobj.transform);
+                bodyIds.Add(gobj.BodyID.Value);
+                bodyIDToPhysicsBody.Add(gobj.BodyID.Value, gobj);
+            }
+            foreach (var gobj in pendingSpawn)
+            {
+                IPhysicsConstraintComponent[] constraints = gobj.GetComponents<IPhysicsConstraintComponent>();
+                foreach(var constraint in constraints)
+                {
+                    constraint.CreateConstraint(system);
+                }
+            }
+
+            foreach (var gobj in pendingSpawn)
+            {
+                IPhysicsBody[] physicsBodies = gobj.GetComponents<IPhysicsBody>();
+                foreach(var physicsBody in physicsBodies)
+                {
+                    physicsBody.OnBodyCreated(gobj.BodyID.Value);
+                }
+            }
+            pendingSpawn.Clear();
         }
 
-        private void FixedUpdate()
+        public void Tick(float deltaTime)
         {
-            if (system.Step(Time.fixedDeltaTime, CollisionSteps, out var error))
+            HandleDestroryAndSpawn();
+            if (system.Step(deltaTime, CollisionSteps, out var error))
             {
                 UpdateManagedTransforms();
             }

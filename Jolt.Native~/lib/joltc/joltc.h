@@ -768,6 +768,9 @@ JPH_CAPI void JPH_BodyCreationSettings_SetMotionType(JPH_BodyCreationSettings* s
 JPH_CAPI JPH_AllowedDOFs JPH_BodyCreationSettings_GetAllowedDOFs(JPH_BodyCreationSettings* settings);
 JPH_CAPI void JPH_BodyCreationSettings_SetAllowedDOFs(JPH_BodyCreationSettings* settings, JPH_AllowedDOFs value);
 
+JPH_CAPI JPH_Bool32 JPH_BodyCreationSettings_GetIsSensor(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetIsSensor(JPH_BodyCreationSettings* settings, JPH_Bool32 value);
+
 /* JPH_SoftBodyCreationSettings */
 JPH_CAPI JPH_SoftBodyCreationSettings* JPH_SoftBodyCreationSettings_Create(void);
 JPH_CAPI void JPH_SoftBodyCreationSettings_Destroy(JPH_SoftBodyCreationSettings* settings);

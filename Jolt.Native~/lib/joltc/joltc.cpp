@@ -1544,6 +1544,21 @@ void JPH_BodyCreationSettings_SetAllowedDOFs(JPH_BodyCreationSettings* settings,
     reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mAllowedDOFs = (JPH::EAllowedDOFs)value;
 }
 
+JPH_Bool32 JPH_BodyCreationSettings_GetIsSensor(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return static_cast<JPH_Bool32>(reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mIsSensor);
+
+}
+
+void JPH_BodyCreationSettings_SetIsSensor(JPH_BodyCreationSettings* settings, JPH_Bool32 value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mIsSensor = static_cast<bool>(value);
+}
+
 /* JPH_SoftBodyCreationSettings */
 JPH_SoftBodyCreationSettings* JPH_SoftBodyCreationSettings_Create(void)
 {
@@ -3726,7 +3741,7 @@ void JPH_BodyInterface_SetFriction(JPH_BodyInterface* interface, JPH_BodyID body
     joltBodyInterface->SetFriction(JPH::BodyID(bodyID), friction);
 }
 
-void JPH_BodyInterface_SetPosition(JPH_BodyInterface* interface, JPH_BodyID bodyId, JPH_RVec3* position, JPH_Activation activationMode)
+void JPH_BodyInterface_SetPosition(JPH_BodyInterface* interface, JPH_BodyID bodyId, const JPH_RVec3* position, JPH_Activation activationMode)
 {
     JPH_ASSERT(interface);
     auto joltBodyInterface = reinterpret_cast<JPH::BodyInterface*>(interface);
@@ -3742,7 +3757,7 @@ void JPH_BodyInterface_GetPosition(JPH_BodyInterface* interface, JPH_BodyID body
     FromJolt(joltBodyInterface->GetPosition(JPH::BodyID(bodyId)), result);
 }
 
-void JPH_BodyInterface_SetRotation(JPH_BodyInterface* interface, JPH_BodyID bodyId, JPH_Quat* rotation, JPH_Activation activationMode)
+void JPH_BodyInterface_SetRotation(JPH_BodyInterface* interface, JPH_BodyID bodyId, const JPH_Quat* rotation, JPH_Activation activationMode)
 {
     JPH_ASSERT(interface);
     auto joltBodyInterface = reinterpret_cast<JPH::BodyInterface*>(interface);
