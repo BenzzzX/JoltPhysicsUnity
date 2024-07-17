@@ -92,8 +92,11 @@ namespace Jolt.Samples
             var settings = BodyCreationSettings.FromShapeSettings(
                 shape, pos, rot, body.MotionType, layer
             );
-
-            return bodies.CreateAndAddBody(settings, activation);
+            settings.SetAllowedDOFs(body.allowedDoFs);
+            var bodyId = bodies.CreateAndAddBody(settings, activation);
+            bodies.SetRestitution(bodyId, body.restitution);
+            bodies.SetFriction(bodyId, body.friction);
+            return bodyId;
         }
 
         private void Start()
