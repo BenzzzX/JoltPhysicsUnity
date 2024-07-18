@@ -1559,6 +1559,21 @@ void JPH_BodyCreationSettings_SetIsSensor(JPH_BodyCreationSettings* settings, JP
     reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mIsSensor = static_cast<bool>(value);
 }
 
+JPH_MotionQuality JPH_BodyCreationSettings_GetMotionQuality(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return static_cast<JPH_MotionQuality>(reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMotionQuality);
+
+}
+
+void JPH_BodyCreationSettings_SetMotionQuality(JPH_BodyCreationSettings* settings, JPH_MotionQuality value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMotionQuality = (JPH::EMotionQuality)value;
+}
+
 /* JPH_SoftBodyCreationSettings */
 JPH_SoftBodyCreationSettings* JPH_SoftBodyCreationSettings_Create(void)
 {

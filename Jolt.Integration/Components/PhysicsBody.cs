@@ -31,6 +31,9 @@ namespace Jolt.Integration
                  "A sensor will receive collision callbacks, but will not cause any collision responses and can be used as a trigger volume. " +
                  "See description at Body::SetIsSensor.")]
         public bool isSensor = false;
+        
+        [Tooltip("Motion quality, or how well it detects collisions when it has a high velocity")]
+        public MotionQuality motionQuality = MotionQuality.Discrete;
 
         private void Start()
         {

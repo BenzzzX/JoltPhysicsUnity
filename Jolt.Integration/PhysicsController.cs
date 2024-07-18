@@ -140,6 +140,7 @@ namespace Jolt.Integration
             );
             settings.SetAllowedDOFs(body.allowedDoFs);
             settings.SetIsSensor(body.isSensor);
+            settings.SetMotionQuality(body.motionQuality);
             var bodyId = bodies.CreateAndAddBody(settings, activation);
             bodies.SetRestitution(bodyId, body.restitution);
             bodies.SetFriction(bodyId, body.friction);

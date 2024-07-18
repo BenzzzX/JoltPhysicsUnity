@@ -1086,6 +1086,13 @@ namespace Jolt
         public static extern void JPH_BodyCreationSettings_SetIsSensor(JPH_BodyCreationSettings* settings, NativeBool value);
 
         [DllImport("joltc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: NativeTypeName("JPH_MotionQuality")]
+        public static extern MotionQuality JPH_BodyCreationSettings_GetMotionQuality(JPH_BodyCreationSettings* settings);
+
+        [DllImport("joltc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void JPH_BodyCreationSettings_SetMotionQuality(JPH_BodyCreationSettings* settings, [NativeTypeName("JPH_MotionQuality")] MotionQuality value);
+
+        [DllImport("joltc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern JPH_SoftBodyCreationSettings* JPH_SoftBodyCreationSettings_Create();
 
         [DllImport("joltc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
