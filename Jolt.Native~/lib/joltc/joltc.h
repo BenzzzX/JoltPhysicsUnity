@@ -465,6 +465,7 @@ typedef struct JPH_SixDOFConstraint				JPH_SixDOFConstraint;
 typedef struct JPH_AllHit_CastRayCollector      JPH_AllHit_CastRayCollector;
 typedef struct JPH_AllHit_CastShapeCollector    JPH_AllHit_CastShapeCollector;
 typedef struct JPH_ShapeCastSettings            JPH_ShapeCastSettings;
+typedef struct JPH_CollideShapeSettings         JPH_CollideShapeSettings;
 
 typedef struct JPH_CollideShapeResult           JPH_CollideShapeResult;
 typedef struct JPH_ContactListener              JPH_ContactListener;
@@ -1227,7 +1228,7 @@ JPH_CAPI JPH_Bool32 JPH_NarrowPhaseQuery_CollidePoint(const JPH_NarrowPhaseQuery
 
 JPH_CAPI JPH_Bool32 JPH_NarrowPhaseQuery_CollideShape(const JPH_NarrowPhaseQuery* query,
 	const JPH_Shape* shape, const JPH_Vec3* scale, const JPH_RMatrix4x4* centerOfMassTransform,
-	JPH_RVec3* baseOffset,
+	const JPH_CollideShapeSettings* collideShapeSettings, const JPH_RVec3* baseOffset,
 	JPH_CollideShapeCollector* callback, void* userData,
 	JPH_BroadPhaseLayerFilter* broadPhaseLayerFilter,
 	JPH_ObjectLayerFilter* objectLayerFilter,
@@ -1235,7 +1236,8 @@ JPH_CAPI JPH_Bool32 JPH_NarrowPhaseQuery_CollideShape(const JPH_NarrowPhaseQuery
 
 JPH_CAPI JPH_Bool32 JPH_NarrowPhaseQuery_CastShape(const JPH_NarrowPhaseQuery* query,
     const JPH_Shape* shape,
-	const JPH_RMatrix4x4* centerOfMassTransform, const JPH_Vec3* direction, JPH_RVec3* baseOffset,
+	const JPH_RMatrix4x4* centerOfMassTransform, const JPH_Vec3* direction, 
+    const JPH_ShapeCastSettings* shapeCastSettings, const JPH_RVec3* baseOffset,
 	JPH_CastShapeCollector* callback, void* userData,
 	JPH_BroadPhaseLayerFilter* broadPhaseLayerFilter,
 	JPH_ObjectLayerFilter* objectLayerFilter,

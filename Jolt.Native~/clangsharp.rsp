@@ -30,6 +30,8 @@ JPH_Triangle
 JPH_ValidateResult
 JPH_Vec3
 JPH_Vec4
+JPH_ShapeCastSettings
+JPH_CollideShapeSettings
 --remap
 JPH_AABox=AABox
 JPH_Activation=Activation
@@ -61,6 +63,8 @@ JPH_Triangle=Triangle
 JPH_ValidateResult=ValidateResult
 JPH_Vec3=float3
 JPH_Vec4=float4
+JPH_ShapeCastSettings=ShapeCastSettings
+JPH_CollideShapeSettings=CollideShapeSettings
 --with-namespace
 NativeBool=Jolt
 double3=Unity.Mathematics

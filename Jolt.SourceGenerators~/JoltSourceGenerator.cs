@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Threading;
 using Microsoft.CodeAnalysis;
@@ -20,7 +21,8 @@ internal class JoltSourceGenerator : ISourceGenerator
         "JPH_RayCastResult", "JPH_CollidePointResult", "JPH_CollideShapeResult", "JPH_ShapeCastResult", "JPH_BodyLockRead", "JPH_BodyLockWrite",
         "JPH_ExtendedUpdateSettings", "JPH_PhysicsSystemSettings", "JPH_PhysicsSettings",
         "JPH_BroadPhaseLayerFilter_Procs", "JPH_ObjectLayerFilter_Procs", "JPH_BodyFilter_Procs", "JPH_ContactListener_Procs",
-        "JPH_BodyActivationListener_Procs", "JPH_CharacterContactListener_Procs"};
+        "JPH_BodyActivationListener_Procs", "JPH_CharacterContactListener_Procs",
+        "ShapeCastSettings", "CollideShapeSettings"};
     static INamedTypeSymbol NativeTypeAttributeSymbol;
 
     public void Initialize(GeneratorInitializationContext ctx)
@@ -269,9 +271,20 @@ internal class JoltSourceGenerator : ISourceGenerator
                         isSelf = true;
                     }
                 }
-                if (isPointer && !isValueType)
+                if (type == "void*")
+                {
+                    parameters.Add($"void* {name}");
+                    arguments.Add($"{name}");
+                    if (!isSelf)
+                    {
+                        proxyParams.Add($"void* {name}");
+                        proxyArgs.Add($"{name}");
+                    }
+                }
+                else if (isPointer && !isValueType)
                 {
                     var depointer = type.Substring(0, type.Length - 1);
+
                     parameters.Add($"NativeHandle<{depointer}> {name}");
                     arguments.Add($"{name}");
 

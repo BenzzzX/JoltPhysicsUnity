@@ -87,6 +87,21 @@ namespace Jolt
         {
             JPH_PhysicsSystem_RemoveConstraint(Handle, constraint.Handle.Reinterpret<JPH_Constraint>());
         }
+        
+        public BroadPhaseQuery GetBroadPhaseQuery()
+        {
+            return new BroadPhaseQuery(JPH_PhysicsSystem_GetBroadPhaseQuery(Handle));
+        }
+        
+        public NarrowPhaseQuery GetNarrowPhaseQuery()
+        {
+            return new NarrowPhaseQuery(JPH_PhysicsSystem_GetNarrowPhaseQuery(Handle));
+        }
+        
+        public NarrowPhaseQuery GetNarrowPhaseQueryNoLock()
+        {
+            return new NarrowPhaseQuery(JPH_PhysicsSystem_GetNarrowPhaseQueryNoLock(Handle));
+        }
 
         public void SetContactListener(IContactListener listener)
         {

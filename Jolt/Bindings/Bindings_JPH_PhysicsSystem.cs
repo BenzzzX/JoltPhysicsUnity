@@ -115,25 +115,10 @@ namespace Jolt
         {
             UnsafeBindings.JPH_PhysicsSystem_RemoveConstraint(system, constraint);
         }
-
-        public static void JPH_PhysicsSystem_AddConstraints(NativeHandle<JPH_PhysicsSystem> system)
+        
+        public static NativeHandle<JPH_BroadPhaseQuery> JPH_PhysicsSystem_GetBroadPhaseQuery(NativeHandle<JPH_PhysicsSystem> system)
         {
-            throw new NotImplementedException();
-        }
-
-        public static void JPH_PhysicsSystem_RemoveConstraints(NativeHandle<JPH_PhysicsSystem> system)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static void JPH_PhysicsSystem_GetBodies(NativeHandle<JPH_PhysicsSystem> system)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static void JPH_PhysicsSystem_GetConstraints(NativeHandle<JPH_PhysicsSystem> system)
-        {
-            throw new NotImplementedException();
+            return CreateSharedHandle(system, UnsafeBindings.JPH_PhysicsSystem_GetBroadPhaseQuery(system));
         }
     }
 }

@@ -4393,7 +4393,7 @@ JPH_Bool32 JPH_NarrowPhaseQuery_CollidePoint(const JPH_NarrowPhaseQuery* query,
 
 JPH_Bool32 JPH_NarrowPhaseQuery_CollideShape(const JPH_NarrowPhaseQuery* query,
     const JPH_Shape* shape, const JPH_Vec3* scale, const JPH_RMatrix4x4* centerOfMassTransform,
-    JPH_RVec3* baseOffset,
+    const JPH_CollideShapeSettings* collideShapeSettings, const JPH_RVec3* baseOffset,
     JPH_CollideShapeCollector* callback, void* userData,
     JPH_BroadPhaseLayerFilter* broadPhaseLayerFilter,
     JPH_ObjectLayerFilter* objectLayerFilter,
@@ -4405,9 +4405,6 @@ JPH_Bool32 JPH_NarrowPhaseQuery_CollideShape(const JPH_NarrowPhaseQuery* query,
     auto joltScale = ToJolt(scale);
     auto joltTransform = ToJolt(*centerOfMassTransform);
 
-    CollideShapeSettings settings;
-    settings.mActiveEdgeMode = EActiveEdgeMode::CollideWithAll;
-
     auto joltBaseOffset = ToJolt(baseOffset);
 
     CollideShapeCollectorCallback collector(callback, userData);
@@ -4416,7 +4413,7 @@ JPH_Bool32 JPH_NarrowPhaseQuery_CollideShape(const JPH_NarrowPhaseQuery* query,
         joltShape,
         joltScale,
         joltTransform,
-        settings,
+        *reinterpret_cast<const CollideShapeSettings*>(collideShapeSettings),
         joltBaseOffset,
         collector,
         ToJolt(broadPhaseLayerFilter),
@@ -4430,7 +4427,7 @@ JPH_Bool32 JPH_NarrowPhaseQuery_CollideShape(const JPH_NarrowPhaseQuery* query,
 JPH_Bool32 JPH_NarrowPhaseQuery_CastShape(const JPH_NarrowPhaseQuery* query,
     const JPH_Shape* shape,
     const JPH_RMatrix4x4* worldTransform, const JPH_Vec3* direction,
-    JPH_RVec3* baseOffset,
+    const JPH_ShapeCastSettings* shapeCastSettings, const JPH_RVec3* baseOffset,
     JPH_CastShapeCollector* callback, void* userData,
     JPH_BroadPhaseLayerFilter* broadPhaseLayerFilter,
     JPH_ObjectLayerFilter* objectLayerFilter,
@@ -4446,17 +4443,12 @@ JPH_Bool32 JPH_NarrowPhaseQuery_CastShape(const JPH_NarrowPhaseQuery* query,
         ToJolt(*worldTransform),
         ToJolt(direction));
 
-    ShapeCastSettings settings;
-    settings.mActiveEdgeMode = EActiveEdgeMode::CollideWithAll;
-    settings.mBackFaceModeTriangles = EBackFaceMode::CollideWithBackFaces;
-    settings.mBackFaceModeConvex = EBackFaceMode::CollideWithBackFaces;
-
     auto joltBaseOffset = ToJolt(baseOffset);
     CastShapeCollectorCallback collector(callback, userData);
 
     joltQuery->CastShape(
         shape_cast,
-        settings,
+        *reinterpret_cast<const ShapeCastSettings*>(shapeCastSettings),
         joltBaseOffset,
         collector,
         ToJolt(broadPhaseLayerFilter),

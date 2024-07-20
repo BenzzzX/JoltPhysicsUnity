@@ -71,11 +71,27 @@ namespace Jolt.Integration
 
         private PhysicsSystem system;
         private BodyInterface bodies;
-        private BodyLockInterface bodyLock;
+        private BodyInterface bodiesNoLock;
+        private BodyLockInterface bodyLockNoLock;
+        private NarrowPhaseQuery narrowPhaseQuery;
+        private BroadPhaseQuery broadPhaseQuery;
+        private NarrowPhaseQuery narrowPhaseQueryNoLock;
         
         public PhysicsSystem System => system;
         public BodyInterface Bodies => bodies;
-        public BodyLockInterface BodyLock => bodyLock;
+        public BodyInterface BodiesNoLock => bodiesNoLock;
+        public BodyLockInterface BodyLockNoLock => bodyLockNoLock;
+        public NarrowPhaseQuery NarrowPhaseQuery => narrowPhaseQuery;
+        public BroadPhaseQuery BroadPhaseQuery => broadPhaseQuery;
+        public NarrowPhaseQuery NarrowPhaseQueryNoLock => narrowPhaseQueryNoLock;
+        
+        private BroadPhaseLayerFilter defaultBroadPhaseLayerFilter;
+        private ObjectLayerFilter defaultObjectLayerPairFilter;
+        private BodyFilter defaultBodyFilter;
+        
+        public BroadPhaseLayerFilter DefaultBroadPhaseLayerFilter => defaultBroadPhaseLayerFilter;
+        public ObjectLayerFilter DefaultObjectLayerPairFilter => defaultObjectLayerPairFilter;
+        public BodyFilter DefaultBodyFilter => defaultBodyFilter;
 
         private List<PhysicsBody> managedGameObjects;
         private NativeList<BodyID> bodyIds;
@@ -177,7 +193,15 @@ namespace Jolt.Integration
 
             system = new PhysicsSystem(settings);
             bodies = system.GetBodyInterface();
-            bodyLock = system.GetBodyLockInterfaceNoLock();
+            bodiesNoLock = system.GetBodyInterfaceNoLock();
+            bodyLockNoLock = system.GetBodyLockInterfaceNoLock();
+            narrowPhaseQuery = system.GetNarrowPhaseQuery();
+            broadPhaseQuery = system.GetBroadPhaseQuery();
+            narrowPhaseQueryNoLock = system.GetNarrowPhaseQueryNoLock();
+
+            defaultBroadPhaseLayerFilter = BroadPhaseLayerFilter.Create();
+            defaultObjectLayerPairFilter = ObjectLayerFilter.Create();
+            defaultBodyFilter = BodyFilter.Create();
 
             foreach (var addon in GetComponents<IPhysicsSystemAddon>())
             {
@@ -188,12 +212,22 @@ namespace Jolt.Integration
             system.OptimizeBroadPhase();
         }
         
+        public PhysicsBody GetPhysicsBody(BodyID bodyID)
+        {
+            // if (bodyIDToPhysicsBody.TryGetValue(bodyID, out var physicsBody))
+            // {
+            //     return physicsBody;
+            // }
+            // return null;
+            return managedGameObjects[(int) bodiesNoLock.GetUserData(bodyID)];
+        }
+        
         private void HandleDestroryAndSpawn()
         {
             foreach (var bodyID in pendingDestroy)
             {
-                bodies.RemoveBody(bodyID);
-                bodies.DestroyBody(bodyID);
+                bodiesNoLock.RemoveBody(bodyID);
+                bodiesNoLock.DestroyBody(bodyID);
                 int id = bodyIds.IndexOf(bodyID);
                 if (id != -1)
                 {
@@ -201,6 +235,8 @@ namespace Jolt.Integration
                     transforms.RemoveAtSwapBack(id);
                     managedGameObjects.RemoveAtSwapBack(id);
                     bodyIDToPhysicsBody.Remove(bodyID);
+                    if(id < bodyIds.Length)
+                        bodiesNoLock.SetUserData(bodyIds[id], (ulong)id);
                 }
                 else
                 {
@@ -223,10 +259,12 @@ namespace Jolt.Integration
             }
             foreach (var gobj in pendingSpawn)
             {
+                var localId = bodyIds.Length;
                 managedGameObjects.Add(gobj);
-                gobj.BodyID = CreateBodyFromGameObject(bodies, gobj.gameObject);
+                gobj.BodyID = CreateBodyFromGameObject(bodiesNoLock, gobj.gameObject);
                 transforms.Add(gobj.transform);
                 bodyIds.Add(gobj.BodyID.Value);
+                bodiesNoLock.SetUserData(gobj.BodyID.Value, (ulong)localId);
                 bodyIDToPhysicsBody.Add(gobj.BodyID.Value, gobj);
             }
             foreach (var gobj in pendingSpawn)
@@ -283,7 +321,7 @@ namespace Jolt.Integration
         {
             UpdateManagedTransformsJob job = new UpdateManagedTransformsJob();
             job.BodyIds = bodyIds.AsArray();
-            job.bodyLock = bodyLock;
+            job.bodyLock = bodyLockNoLock;
             job.Schedule(transforms).Complete();
         }
 
