@@ -510,6 +510,7 @@ typedef struct JPH_CharacterVirtualSettings         JPH_CharacterVirtualSettings
 typedef struct JPH_CharacterVirtual                 JPH_CharacterVirtual;
 
 typedef JPH_Bool32(JPH_API_CALL* JPH_AssertFailureFunc)(const char* expression, const char* mssage, const char* file, uint32_t line);
+typedef float JPH_CombineFunction(const JPH_Body* body1, const JPH_SubShapeID *subShapeID1, const JPH_Body* body2, const JPH_SubShapeID *subShapeID2);
 
 JPH_CAPI JPH_Bool32 JPH_Init(uint32_t tempAllocatorSize);
 JPH_CAPI void JPH_Shutdown(void);
@@ -621,6 +622,8 @@ JPH_CAPI void JPH_PhysicsSystem_RemoveConstraints(JPH_PhysicsSystem* system, JPH
 
 JPH_CAPI void JPH_PhysicsSystem_GetBodies(const JPH_PhysicsSystem* system, JPH_BodyID* ids, uint32_t count);
 JPH_CAPI void JPH_PhysicsSystem_GetConstraints(const JPH_PhysicsSystem* system, const JPH_Constraint** constraints, uint32_t count);
+
+JPH_CAPI void JPH_PhysicsSystem_SetCombineRestitution(const JPH_PhysicsSystem* system, JPH_CombineFunction function);
 
 /* Math */
 JPH_CAPI void JPH_Quaternion_FromTo(const JPH_Vec3* from, const JPH_Vec3* to, JPH_Quat* quat);

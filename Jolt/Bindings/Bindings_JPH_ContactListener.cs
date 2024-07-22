@@ -55,7 +55,10 @@ namespace Jolt
         {
             try
             {
-                return managedContactListeners[udata]?.OnContactValidate() ?? ValidateResult.AcceptContact;
+                return managedContactListeners[udata]?.OnContactValidate(new Body(NativeHandle<JPH_Body>.CreateObserveHandle(bodyA)), 
+                    new Body(NativeHandle<JPH_Body>.CreateObserveHandle(bodyB)), 
+                    *offset, 
+                    ref *result) ?? ValidateResult.AcceptContact;
             }
             catch (Exception e)
             {
@@ -83,7 +86,7 @@ namespace Jolt
         {
             try
             {
-                managedContactListeners[udata]?.OnContactRemoved();
+                managedContactListeners[udata]?.OnContactRemoved(pair->Body1ID, pair->subShapeID1, pair->Body2ID, pair->subShapeID2);
             }
             catch (Exception e)
             {

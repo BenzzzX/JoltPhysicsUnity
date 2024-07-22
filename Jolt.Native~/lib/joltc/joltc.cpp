@@ -3519,6 +3519,13 @@ JPH_CAPI void JPH_PhysicsSystem_GetConstraints(const JPH_PhysicsSystem* system, 
 	}
 }
 
+void JPH_PhysicsSystem_SetCombineRestitution(const JPH_PhysicsSystem* system, JPH_CombineFunction function)
+{
+    JPH_ASSERT(system);
+
+    system->physicsSystem->SetCombineRestitution(reinterpret_cast<JPH::ContactConstraintManager::CombineFunction>(function));
+}
+
 JPH_Body* JPH_BodyInterface_CreateBody(JPH_BodyInterface* interface, JPH_BodyCreationSettings* settings)
 {
     auto joltBodyInterface = reinterpret_cast<JPH::BodyInterface*>(interface);

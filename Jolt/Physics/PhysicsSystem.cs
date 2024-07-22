@@ -139,6 +139,13 @@ namespace Jolt
         {
             return JPH_PhysicsSystem_GetNumActiveBodies(Handle, type);
         }
+        
+        public unsafe delegate float CombineRestitutionDelegate(JPH_Body* body1, uint* subShapeID1, JPH_Body* body2, uint* subShapeID2);
+        public unsafe void SetCombineRestitution(CombineRestitutionDelegate combineRestitution)
+        {
+            IntPtr ptr = System.Runtime.InteropServices.Marshal.GetFunctionPointerForDelegate(combineRestitution);
+            UnsafeBindings.JPH_PhysicsSystem_SetCombineRestitution(Handle, ptr);
+        }
 
         /// <summary>
         /// Get the maximum number of bodies that this system supports.
