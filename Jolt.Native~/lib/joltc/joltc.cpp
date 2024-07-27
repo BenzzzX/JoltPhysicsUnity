@@ -1518,6 +1518,20 @@ void JPH_BodyCreationSettings_SetAngularVelocity(JPH_BodyCreationSettings* setti
     reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mAngularVelocity = ToJolt(velocity);
 }
 
+float JPH_BodyCreationSettings_GetMaxAngularVelocity(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMaxAngularVelocity;
+}
+
+void JPH_BodyCreationSettings_SetMaxAngularVelocity(JPH_BodyCreationSettings* settings, float velocity)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMaxAngularVelocity = velocity;
+}
+
 JPH_MotionType JPH_BodyCreationSettings_GetMotionType(JPH_BodyCreationSettings* settings)
 {
     JPH_ASSERT(settings);
@@ -4735,7 +4749,7 @@ public:
                 reinterpret_cast<const JPH_Body*>(&inBody1),
                 reinterpret_cast<const JPH_Body*>(&inBody2),
                 &baseOffset,
-                nullptr
+                reinterpret_cast<const JPH_CollideShapeResult*>(&inCollisionResult)
             );
 
             return (JPH::ValidateResult)result;

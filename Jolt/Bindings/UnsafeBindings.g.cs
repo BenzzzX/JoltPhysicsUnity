@@ -85,6 +85,61 @@ namespace Jolt
         public uint subShapeID2;
     }
 
+    public partial struct JPH_Faces
+    {
+        public uint numFaces;
+
+        [NativeTypeName("JPH_Vec3[32]")]
+        public _storage_e__FixedBuffer storage;
+
+        public partial struct _storage_e__FixedBuffer
+        {
+            public float3 e0;
+            public float3 e1;
+            public float3 e2;
+            public float3 e3;
+            public float3 e4;
+            public float3 e5;
+            public float3 e6;
+            public float3 e7;
+            public float3 e8;
+            public float3 e9;
+            public float3 e10;
+            public float3 e11;
+            public float3 e12;
+            public float3 e13;
+            public float3 e14;
+            public float3 e15;
+            public float3 e16;
+            public float3 e17;
+            public float3 e18;
+            public float3 e19;
+            public float3 e20;
+            public float3 e21;
+            public float3 e22;
+            public float3 e23;
+            public float3 e24;
+            public float3 e25;
+            public float3 e26;
+            public float3 e27;
+            public float3 e28;
+            public float3 e29;
+            public float3 e30;
+            public float3 e31;
+
+            public unsafe ref float3 this[int index]
+            {
+                get
+                {
+                    fixed (float3* pThis = &e0)
+                    {
+                        return ref pThis[index];
+                    }
+                }
+            }
+        }
+    }
+
     public partial struct JPH_CollideShapeResult
     {
         [NativeTypeName("JPH_Vec3")]
@@ -106,6 +161,10 @@ namespace Jolt
 
         [NativeTypeName("JPH_BodyID")]
         public BodyID bodyID2;
+
+        public JPH_Faces shape1Face;
+
+        public JPH_Faces shape2Face;
     }
 
     public partial struct JPH_ShapeCastResult
@@ -130,9 +189,14 @@ namespace Jolt
         [NativeTypeName("JPH_BodyID")]
         public BodyID bodyID2;
 
+        public JPH_Faces shape1Face;
+
+        public JPH_Faces shape2Face;
+
         public float fraction;
 
-        public NativeBool isBackFaceHit;
+        [NativeTypeName("uint8_t")]
+        public byte isBackFaceHit;
     }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -1066,6 +1130,12 @@ namespace Jolt
 
         [DllImport("joltc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void JPH_BodyCreationSettings_SetAngularVelocity(JPH_BodyCreationSettings* settings, [NativeTypeName("const JPH_Vec3 *")] float3* velocity);
+
+        [DllImport("joltc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void JPH_BodyCreationSettings_SetMaxAngularVelocity(JPH_BodyCreationSettings* settings, float value);
+
+        [DllImport("joltc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern float JPH_BodyCreationSettings_GetMaxAngularVelocity(JPH_BodyCreationSettings* settings);
 
         [DllImport("joltc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("JPH_MotionType")]

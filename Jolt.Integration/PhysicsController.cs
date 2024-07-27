@@ -38,6 +38,8 @@ namespace Jolt.Integration
         /// This is intentionally low for the samples. For a real project, use something in the order of 10240.
         /// </remarks>
         private const uint MaxContactConstraints = 1024;
+        
+        private const float MaxAngularVelocity = 100.0f * math.PI;
 
         private static class ObjectLayers
         {
@@ -61,7 +63,7 @@ namespace Jolt.Integration
             {
                 if (_instance == null)
                 {
-                    _instance = FindObjectOfType<PhysicsController>();
+                    _instance = Object.FindFirstObjectByType<PhysicsController>();
                 }
                 return _instance;
             }
@@ -157,6 +159,7 @@ namespace Jolt.Integration
             settings.SetAllowedDOFs(body.allowedDoFs);
             settings.SetIsSensor(body.isSensor);
             settings.SetMotionQuality(body.motionQuality);
+            settings.SetMaxAngularVelocity(MaxAngularVelocity);
             var bodyId = bodies.CreateAndAddBody(settings, activation);
             bodies.SetRestitution(bodyId, body.restitution);
             bodies.SetFriction(bodyId, body.friction);

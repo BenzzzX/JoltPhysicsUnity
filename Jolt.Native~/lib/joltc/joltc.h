@@ -352,6 +352,14 @@ typedef struct JPH_CollidePointResult {
 } JPH_CollidePointResult;
 
 // NOTE: Needs to be kept in sync with JPH::ShapeCastResult
+typedef struct JPH_Faces
+{
+    uint32_t numFaces;
+    uint32_t _padding1;
+    uint32_t _padding2;
+    uint32_t _padding3;
+    JPH_Vec3 storage[32];
+} JPH_Faces;
 typedef struct JPH_CollideShapeResult
 {
     JPH_Vec3           contactPointOn1;
@@ -361,6 +369,8 @@ typedef struct JPH_CollideShapeResult
     JPH_SubShapeID     subShapeID1;
     JPH_SubShapeID     subShapeID2;
     JPH_BodyID         bodyID2;
+    JPH_Faces          shape1Face;
+    JPH_Faces          shape2Face;
 } JPH_CollideShapeResult;
 
 typedef struct JPH_ShapeCastResult
@@ -372,8 +382,10 @@ typedef struct JPH_ShapeCastResult
     JPH_SubShapeID     subShapeID1;
     JPH_SubShapeID     subShapeID2;
     JPH_BodyID         bodyID2;
+    JPH_Faces          shape1Face;
+    JPH_Faces          shape2Face;
     float              fraction;
-    JPH_Bool32         isBackFaceHit;
+    uint8_t            isBackFaceHit;
 } JPH_ShapeCastResult;
 
 typedef float JPH_RayCastBodyCollector(void* context, JPH_BroadPhaseCastResult* result);
@@ -765,6 +777,9 @@ JPH_CAPI void JPH_BodyCreationSettings_SetLinearVelocity(JPH_BodyCreationSetting
 
 JPH_CAPI void JPH_BodyCreationSettings_GetAngularVelocity(JPH_BodyCreationSettings* settings, JPH_Vec3* velocity);
 JPH_CAPI void JPH_BodyCreationSettings_SetAngularVelocity(JPH_BodyCreationSettings* settings, const JPH_Vec3* velocity);
+
+JPH_CAPI void JPH_BodyCreationSettings_SetMaxAngularVelocity(JPH_BodyCreationSettings* settings, float value);
+JPH_CAPI float JPH_BodyCreationSettings_GetMaxAngularVelocity(JPH_BodyCreationSettings* settings);
 
 JPH_CAPI JPH_MotionType JPH_BodyCreationSettings_GetMotionType(JPH_BodyCreationSettings* settings);
 JPH_CAPI void JPH_BodyCreationSettings_SetMotionType(JPH_BodyCreationSettings* settings, JPH_MotionType value);
