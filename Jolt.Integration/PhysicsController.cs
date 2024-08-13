@@ -212,7 +212,6 @@ namespace Jolt.Integration
             }
 
             HandleDestroryAndSpawn();
-            system.OptimizeBroadPhase();
         }
         
         public PhysicsBody GetPhysicsBody(BodyID bodyID)
@@ -227,6 +226,9 @@ namespace Jolt.Integration
         
         private void HandleDestroryAndSpawn()
         {
+            bool any = pendingDestroy.Count > 0 || pendingSpawn.Count > 0;
+            if(!any)
+                return;
             foreach (var bodyID in pendingDestroy)
             {
                 bodiesNoLock.RemoveBody(bodyID);
@@ -288,6 +290,8 @@ namespace Jolt.Integration
                 }
             }
             pendingSpawn.Clear();
+            
+            system.OptimizeBroadPhase();
         }
 
         public void Tick(float deltaTime)

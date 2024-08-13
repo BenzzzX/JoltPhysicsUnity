@@ -35,7 +35,7 @@ namespace Jolt.Integration
         [Tooltip("Motion quality, or how well it detects collisions when it has a high velocity")]
         public MotionQuality motionQuality = MotionQuality.Discrete;
 
-        private void Start()
+        private void Awake()
         {
             if(PhysicsController.Instance != null)
                 PhysicsController.Instance.RegisterSpawn(this);
