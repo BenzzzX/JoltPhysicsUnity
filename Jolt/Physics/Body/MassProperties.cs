@@ -1,8 +1,10 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using Unity.Mathematics;
 
 namespace Jolt
 {
+    [Serializable]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct MassProperties
     {

@@ -17,6 +17,7 @@ JPH_IndexedTriangleNoMaterial
 JPH_MassProperties
 JPH_Matrix4x4
 JPH_MotionType
+JPH_OverrideMassProperties
 JPH_MotionQuality
 JPH_MotorState
 JPH_PhysicsUpdateError
@@ -49,6 +50,7 @@ JPH_IndexedTriangleNoMaterial=IndexedTriangleNoMaterial
 JPH_MassProperties=MassProperties
 JPH_Matrix4x4=float4x4
 JPH_MotionType=MotionType
+JPH_OverrideMassProperties=OverrideMassProperties
 JPH_MotionQuality=MotionQuality
 JPH_MotorState=MotorState
 JPH_ObjectLayer=ObjectLayer

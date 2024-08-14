@@ -145,24 +145,39 @@ namespace Jolt.Integration
             var pos = (float3) body.transform.position;
             var rot = (quaternion) body.transform.rotation;
 
-            var layer = body.MotionType == MotionType.Static
+            var layer = body.motionType == MotionType.Static
                 ? (ushort)PhysicsSamplesLayers.Static
                 : (ushort)PhysicsSamplesLayers.Moving;
 
-            var activation = body.MotionType == MotionType.Static
+            var activation = body.motionType == MotionType.Static
                 ? Activation.DontActivate
                 : Activation.Activate;
 
             var settings = BodyCreationSettings.FromShapeSettings(
-                shape, pos, rot, body.MotionType, layer
+                shape, pos, rot, body.motionType, layer
             );
             settings.SetAllowedDOFs(body.allowedDoFs);
+            settings.SetAllowDynamicOrKinematic(body.allowDynamicOrKinematic);
             settings.SetIsSensor(body.isSensor);
+            settings.SetCollideKinematicVsNonDynamic(body.collideKinematicVsNonDynamic);
+            settings.SetUseManifoldReduction(body.useManifoldReduction);
+            settings.SetApplyGyroscopicForce(body.applyGyroscopicForce);
             settings.SetMotionQuality(body.motionQuality);
-            settings.SetMaxAngularVelocity(MaxAngularVelocity);
+            settings.SetEnhancedInternalEdgeRemoval(body.enhancedInternalEdgeRemoval);
+            settings.SetAllowSleeping(body.allowSleeping);
+            settings.SetFriction(body.friction);
+            settings.SetRestitution(body.restitution);
+            settings.SetLinearDamping(body.linearDamping);
+            settings.SetAngularDamping(body.angularDamping);
+            settings.SetMaxLinearVelocity(body.maxLinearVelocity);
+            settings.SetMaxAngularVelocity(body.maxAngularVelocity);
+            settings.SetGravityFactor(body.gravityFactor);;
+            settings.SetNumVelocityStepsOverride(body.numVelocityStepsOverride);
+            settings.SetNumPositionStepsOverride(body.numPositionStepsOverride);
+            settings.SetOverrideMassProperties(body.overrideMassProperties);
+            settings.SetInertiaMultiplier(body.inertiaMultiplier);
+            settings.SetMassPropertiesOverride(body.massPropertiesOverride);
             var bodyId = bodies.CreateAndAddBody(settings, activation);
-            bodies.SetRestitution(bodyId, body.restitution);
-            bodies.SetFriction(bodyId, body.friction);
             return bodyId;
         }
 

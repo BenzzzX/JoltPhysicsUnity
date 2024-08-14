@@ -1488,6 +1488,36 @@ void JPH_BodyCreationSettings_Destroy(JPH_BodyCreationSettings* settings)
     }
 }
 
+void JPH_BodyCreationSettings_GetPosition(JPH_BodyCreationSettings* settings, JPH_Vec3* position)
+{
+    JPH_ASSERT(settings);
+
+    auto joltVector = reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mPosition;
+    FromJolt(joltVector, position);
+}
+
+void JPH_BodyCreationSettings_SetPosition(JPH_BodyCreationSettings* settings, const JPH_Vec3* position)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mPosition = ToJolt(position);
+}
+
+void JPH_BodyCreationSettings_GetRotation(JPH_BodyCreationSettings* settings, JPH_Quat* rotation)
+{
+    JPH_ASSERT(settings);
+
+    auto joltQuat = reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mRotation;
+    FromJolt(joltQuat, rotation);
+}
+
+void JPH_BodyCreationSettings_SetRotation(JPH_BodyCreationSettings* settings, const JPH_Quat* rotation)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mRotation = ToJolt(rotation);
+}
+
 void JPH_BodyCreationSettings_GetLinearVelocity(JPH_BodyCreationSettings* settings, JPH_Vec3* velocity)
 {
     JPH_ASSERT(settings);
@@ -1518,18 +1548,32 @@ void JPH_BodyCreationSettings_SetAngularVelocity(JPH_BodyCreationSettings* setti
     reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mAngularVelocity = ToJolt(velocity);
 }
 
-float JPH_BodyCreationSettings_GetMaxAngularVelocity(JPH_BodyCreationSettings* settings)
+uint64_t JPH_BodyCreationSettings_GetUserData(JPH_BodyCreationSettings* settings)
 {
     JPH_ASSERT(settings);
 
-    return reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMaxAngularVelocity;
+    return reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mUserData;
 }
 
-void JPH_BodyCreationSettings_SetMaxAngularVelocity(JPH_BodyCreationSettings* settings, float velocity)
+void JPH_BodyCreationSettings_SetUserData(JPH_BodyCreationSettings* settings, uint64_t userData)
 {
     JPH_ASSERT(settings);
 
-    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMaxAngularVelocity = velocity;
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mUserData = userData;
+}
+
+JPH_ObjectLayer JPH_BodyCreationSettings_GetObjectLayer(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return static_cast<JPH_ObjectLayer>(reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mObjectLayer);
+}
+
+void JPH_BodyCreationSettings_SetObjectLayer(JPH_BodyCreationSettings* settings, JPH_ObjectLayer objectLayer)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mObjectLayer = (JPH::ObjectLayer)objectLayer;
 }
 
 JPH_MotionType JPH_BodyCreationSettings_GetMotionType(JPH_BodyCreationSettings* settings)
@@ -1558,12 +1602,25 @@ void JPH_BodyCreationSettings_SetAllowedDOFs(JPH_BodyCreationSettings* settings,
     reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mAllowedDOFs = (JPH::EAllowedDOFs)value;
 }
 
+JPH_Bool32 JPH_BodyCreationSettings_GetAllowDynamicOrKinematic(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return static_cast<JPH_Bool32>(reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mAllowDynamicOrKinematic);
+}
+
+void JPH_BodyCreationSettings_SetAllowDynamicOrKinematic(JPH_BodyCreationSettings* settings, JPH_Bool32 value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mAllowDynamicOrKinematic = static_cast<bool>(value);
+}
+
 JPH_Bool32 JPH_BodyCreationSettings_GetIsSensor(JPH_BodyCreationSettings* settings)
 {
     JPH_ASSERT(settings);
 
     return static_cast<JPH_Bool32>(reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mIsSensor);
-
 }
 
 void JPH_BodyCreationSettings_SetIsSensor(JPH_BodyCreationSettings* settings, JPH_Bool32 value)
@@ -1573,12 +1630,53 @@ void JPH_BodyCreationSettings_SetIsSensor(JPH_BodyCreationSettings* settings, JP
     reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mIsSensor = static_cast<bool>(value);
 }
 
+JPH_Bool32 JPH_BodyCreationSettings_GetCollideKinematicVsNonDynamic(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return static_cast<JPH_Bool32>(reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mCollideKinematicVsNonDynamic);
+}
+
+void JPH_BodyCreationSettings_SetCollideKinematicVsNonDynamic(JPH_BodyCreationSettings* settings, JPH_Bool32 value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mCollideKinematicVsNonDynamic = static_cast<bool>(value);
+}
+
+JPH_Bool32 JPH_BodyCreationSettings_GetUseManifoldReduction(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return static_cast<JPH_Bool32>(reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mUseManifoldReduction);
+}
+
+void JPH_BodyCreationSettings_SetUseManifoldReduction(JPH_BodyCreationSettings* settings, JPH_Bool32 value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mUseManifoldReduction = static_cast<bool>(value);
+}
+
+JPH_Bool32 JPH_BodyCreationSettings_GetApplyGyroscopicForce(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return static_cast<JPH_Bool32>(reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mApplyGyroscopicForce);
+}
+
+void JPH_BodyCreationSettings_SetApplyGyroscopicForce(JPH_BodyCreationSettings* settings, JPH_Bool32 value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mApplyGyroscopicForce = static_cast<bool>(value);
+}
+
 JPH_MotionQuality JPH_BodyCreationSettings_GetMotionQuality(JPH_BodyCreationSettings* settings)
 {
     JPH_ASSERT(settings);
 
     return static_cast<JPH_MotionQuality>(reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMotionQuality);
-
 }
 
 void JPH_BodyCreationSettings_SetMotionQuality(JPH_BodyCreationSettings* settings, JPH_MotionQuality value)
@@ -1586,6 +1684,204 @@ void JPH_BodyCreationSettings_SetMotionQuality(JPH_BodyCreationSettings* setting
     JPH_ASSERT(settings);
 
     reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMotionQuality = (JPH::EMotionQuality)value;
+}
+
+JPH_Bool32 JPH_BodyCreationSettings_GetEnhancedInternalEdgeRemoval(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return static_cast<JPH_Bool32>(reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mEnhancedInternalEdgeRemoval);
+}
+
+void JPH_BodyCreationSettings_SetEnhancedInternalEdgeRemoval(JPH_BodyCreationSettings* settings, JPH_Bool32 value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mEnhancedInternalEdgeRemoval = static_cast<bool>(value);
+}
+
+JPH_Bool32 JPH_BodyCreationSettings_GetAllowSleeping(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return static_cast<JPH_Bool32>(reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mAllowSleeping);
+}
+
+void JPH_BodyCreationSettings_SetAllowSleeping(JPH_BodyCreationSettings* settings, JPH_Bool32 value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mAllowSleeping = static_cast<bool>(value);
+}
+
+float JPH_BodyCreationSettings_GetFriction(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mFriction;
+}
+
+void JPH_BodyCreationSettings_SetFriction(JPH_BodyCreationSettings* settings, float value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mFriction = value;
+}
+
+float JPH_BodyCreationSettings_GetRestitution(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mRestitution;
+}
+
+void JPH_BodyCreationSettings_SetRestitution(JPH_BodyCreationSettings* settings, float value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mRestitution = value;
+}
+
+float JPH_BodyCreationSettings_GetLinearDamping(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mLinearDamping;
+}
+
+void JPH_BodyCreationSettings_SetLinearDamping(JPH_BodyCreationSettings* settings, float value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mLinearDamping = value;
+}
+
+float JPH_BodyCreationSettings_GetAngularDamping(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mAngularDamping;
+}
+
+void JPH_BodyCreationSettings_SetAngularDamping(JPH_BodyCreationSettings* settings, float value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mAngularDamping = value;
+}
+
+float JPH_BodyCreationSettings_GetMaxLinearVelocity(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMaxLinearVelocity;
+}
+
+void JPH_BodyCreationSettings_SetMaxLinearVelocity(JPH_BodyCreationSettings* settings, float velocity)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMaxLinearVelocity = velocity;
+}
+
+
+float JPH_BodyCreationSettings_GetMaxAngularVelocity(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMaxAngularVelocity;
+}
+
+void JPH_BodyCreationSettings_SetMaxAngularVelocity(JPH_BodyCreationSettings* settings, float velocity)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMaxAngularVelocity = velocity;
+}
+
+float JPH_BodyCreationSettings_GetGravityFactor(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mGravityFactor;
+}
+
+void JPH_BodyCreationSettings_SetGravityFactor(JPH_BodyCreationSettings* settings, float value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mGravityFactor = value;
+}
+
+uint32_t JPH_BodyCreationSettings_GetNumVelocityStepsOverride(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mNumVelocityStepsOverride;
+}
+
+void JPH_BodyCreationSettings_SetNumVelocityStepsOverride(JPH_BodyCreationSettings* settings, uint32_t value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mNumVelocityStepsOverride = value;
+}
+
+uint32_t JPH_BodyCreationSettings_GetNumPositionStepsOverride(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mNumPositionStepsOverride;
+}
+
+void JPH_BodyCreationSettings_SetNumPositionStepsOverride(JPH_BodyCreationSettings* settings, uint32_t value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mNumPositionStepsOverride = value;
+}
+
+JPH_OverrideMassProperties JPH_BodyCreationSettings_GetOverrideMassProperties(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return static_cast<JPH_OverrideMassProperties>(reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mOverrideMassProperties);
+}
+
+void JPH_BodyCreationSettings_SetOverrideMassProperties(JPH_BodyCreationSettings* settings, JPH_OverrideMassProperties value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mOverrideMassProperties = (JPH::EOverrideMassProperties)value;
+}
+
+float JPH_BodyCreationSettings_GetInertiaMultiplier(JPH_BodyCreationSettings* settings)
+{
+    JPH_ASSERT(settings);
+
+    return reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mInertiaMultiplier;
+}
+
+void JPH_BodyCreationSettings_SetInertiaMultiplier(JPH_BodyCreationSettings* settings, float value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mInertiaMultiplier = value;
+}
+
+void JPH_BodyCreationSettings_GetMassPropertiesOverride(JPH_BodyCreationSettings* settings, JPH_MassProperties* result)
+{
+    JPH_ASSERT(settings);
+
+    auto massProperties = reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMassPropertiesOverride;
+    FromJolt(massProperties, result);
+}
+
+void JPH_BodyCreationSettings_SetMassPropertiesOverride(JPH_BodyCreationSettings* settings, const JPH_MassProperties* value)
+{
+    JPH_ASSERT(settings);
+
+    reinterpret_cast<JPH::BodyCreationSettings*>(settings)->mMassPropertiesOverride = ToJolt(value);
 }
 
 /* JPH_SoftBodyCreationSettings */

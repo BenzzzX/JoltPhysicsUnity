@@ -238,6 +238,15 @@ typedef enum JPH_SpringMode {
     _JPH_SpringMode_Force32 = 0x7FFFFFFF
 } JPH_SpringMode;
 
+typedef enum JPH_OverrideMassProperties {
+    JPH_OverrideMassProperties_CalculateMassAndInertia,
+    JPH_OverrideMassProperties_CalculateInertia,
+    JPH_OverrideMassProperties_MassAndInertiaProvided,
+
+    _JPH_OverrideMassProperties_Count,
+    _JPH_OverrideMassProperties_Force32 = 0x7FFFFFFF
+} JPH_OverrideMassProperties;
+
 typedef struct JPH_Vec3 {
     float x;
     float y;
@@ -403,6 +412,7 @@ typedef struct JPH_ObjectLayerPairFilter			JPH_ObjectLayerPairFilter;
 typedef struct JPH_BroadPhaseLayerFilter            JPH_BroadPhaseLayerFilter;
 typedef struct JPH_ObjectLayerFilter                JPH_ObjectLayerFilter;
 typedef struct JPH_BodyFilter                       JPH_BodyFilter;
+typedef struct JPH_CollisionGroup                   JPH_CollisionGroup;
 
 typedef struct JPH_PhysicsSystem                    JPH_PhysicsSystem;
 
@@ -772,14 +782,26 @@ JPH_CAPI JPH_BodyCreationSettings* JPH_BodyCreationSettings_Create3(const JPH_Sh
     JPH_ObjectLayer objectLayer);
 JPH_CAPI void JPH_BodyCreationSettings_Destroy(JPH_BodyCreationSettings* settings);
 
+JPH_CAPI void JPH_BodyCreationSettings_GetPosition(JPH_BodyCreationSettings* settings, JPH_Vec3* position);
+JPH_CAPI void JPH_BodyCreationSettings_SetPosition(JPH_BodyCreationSettings* settings, const JPH_Vec3* position);
+
+JPH_CAPI void JPH_BodyCreationSettings_GetRotation(JPH_BodyCreationSettings* settings, JPH_Quat* rotation);
+JPH_CAPI void JPH_BodyCreationSettings_SetRotation(JPH_BodyCreationSettings* settings, const JPH_Quat* rotation);
+
 JPH_CAPI void JPH_BodyCreationSettings_GetLinearVelocity(JPH_BodyCreationSettings* settings, JPH_Vec3* velocity);
 JPH_CAPI void JPH_BodyCreationSettings_SetLinearVelocity(JPH_BodyCreationSettings* settings, const JPH_Vec3* velocity);
 
 JPH_CAPI void JPH_BodyCreationSettings_GetAngularVelocity(JPH_BodyCreationSettings* settings, JPH_Vec3* velocity);
 JPH_CAPI void JPH_BodyCreationSettings_SetAngularVelocity(JPH_BodyCreationSettings* settings, const JPH_Vec3* velocity);
 
-JPH_CAPI void JPH_BodyCreationSettings_SetMaxAngularVelocity(JPH_BodyCreationSettings* settings, float value);
-JPH_CAPI float JPH_BodyCreationSettings_GetMaxAngularVelocity(JPH_BodyCreationSettings* settings);
+JPH_CAPI uint64_t JPH_BodyCreationSettings_GetUserData(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetUserData(JPH_BodyCreationSettings* settings, uint64_t value);
+
+JPH_CAPI JPH_ObjectLayer JPH_BodyCreationSettings_GetObjectLayer(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetObjectLayer(JPH_BodyCreationSettings* settings, JPH_ObjectLayer value);
+
+// JPH_CAPI JPH_CollisionGroup* JPH_BodyCreationSettings_GetCollisionGroup(JPH_BodyCreationSettings* settings);
+// JPH_CAPI void JPH_BodyCreationSettings_SetCollisionGroup(JPH_BodyCreationSettings* settings, const JPH_CollisionGroup* value);
 
 JPH_CAPI JPH_MotionType JPH_BodyCreationSettings_GetMotionType(JPH_BodyCreationSettings* settings);
 JPH_CAPI void JPH_BodyCreationSettings_SetMotionType(JPH_BodyCreationSettings* settings, JPH_MotionType value);
@@ -787,11 +809,65 @@ JPH_CAPI void JPH_BodyCreationSettings_SetMotionType(JPH_BodyCreationSettings* s
 JPH_CAPI JPH_AllowedDOFs JPH_BodyCreationSettings_GetAllowedDOFs(JPH_BodyCreationSettings* settings);
 JPH_CAPI void JPH_BodyCreationSettings_SetAllowedDOFs(JPH_BodyCreationSettings* settings, JPH_AllowedDOFs value);
 
+JPH_CAPI JPH_Bool32 JPH_BodyCreationSettings_GetAllowDynamicOrKinematic(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetAllowDynamicOrKinematic(JPH_BodyCreationSettings* settings, JPH_Bool32 value);
+
 JPH_CAPI JPH_Bool32 JPH_BodyCreationSettings_GetIsSensor(JPH_BodyCreationSettings* settings);
 JPH_CAPI void JPH_BodyCreationSettings_SetIsSensor(JPH_BodyCreationSettings* settings, JPH_Bool32 value);
 
+JPH_CAPI JPH_Bool32 JPH_BodyCreationSettings_GetCollideKinematicVsNonDynamic(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetCollideKinematicVsNonDynamic(JPH_BodyCreationSettings* settings, JPH_Bool32 value);
+
+JPH_CAPI JPH_Bool32 JPH_BodyCreationSettings_GetUseManifoldReduction(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetUseManifoldReduction(JPH_BodyCreationSettings* settings, JPH_Bool32 value);
+
+JPH_CAPI JPH_Bool32 JPH_BodyCreationSettings_GetApplyGyroscopicForce(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetApplyGyroscopicForce(JPH_BodyCreationSettings* settings, JPH_Bool32 value);
+
 JPH_CAPI JPH_MotionQuality JPH_BodyCreationSettings_GetMotionQuality(JPH_BodyCreationSettings* settings);
 JPH_CAPI void JPH_BodyCreationSettings_SetMotionQuality(JPH_BodyCreationSettings* settings, JPH_MotionQuality value);
+
+JPH_CAPI JPH_Bool32 JPH_BodyCreationSettings_GetEnhancedInternalEdgeRemoval(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetEnhancedInternalEdgeRemoval(JPH_BodyCreationSettings* settings, JPH_Bool32 value);
+
+JPH_CAPI JPH_Bool32 JPH_BodyCreationSettings_GetAllowSleeping(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetAllowSleeping(JPH_BodyCreationSettings* settings, JPH_Bool32 value);
+
+JPH_CAPI float JPH_BodyCreationSettings_GetFriction(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetFriction(JPH_BodyCreationSettings* settings, float value);
+
+JPH_CAPI float JPH_BodyCreationSettings_GetRestitution(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetRestitution(JPH_BodyCreationSettings* settings, float value);
+
+JPH_CAPI float JPH_BodyCreationSettings_GetLinearDamping(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetLinearDamping(JPH_BodyCreationSettings* settings, float value);
+
+JPH_CAPI float JPH_BodyCreationSettings_GetAngularDamping(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetAngularDamping(JPH_BodyCreationSettings* settings, float value);
+
+JPH_CAPI float JPH_BodyCreationSettings_GetMaxLinearVelocity(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetMaxLinearVelocity(JPH_BodyCreationSettings* settings, float value);
+
+JPH_CAPI void JPH_BodyCreationSettings_SetMaxAngularVelocity(JPH_BodyCreationSettings* settings, float value);
+JPH_CAPI float JPH_BodyCreationSettings_GetMaxAngularVelocity(JPH_BodyCreationSettings* settings);
+
+JPH_CAPI float JPH_BodyCreationSettings_GetGravityFactor(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetGravityFactor(JPH_BodyCreationSettings* settings, float value);
+
+JPH_CAPI uint32_t JPH_BodyCreationSettings_GetNumVelocityStepsOverride(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetNumVelocityStepsOverride(JPH_BodyCreationSettings* settings, uint32_t value);
+
+JPH_CAPI uint32_t JPH_BodyCreationSettings_GetNumPositionStepsOverride(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetNumPositionStepsOverride(JPH_BodyCreationSettings* settings, uint32_t value);
+
+JPH_CAPI JPH_OverrideMassProperties JPH_BodyCreationSettings_GetOverrideMassProperties(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetOverrideMassProperties(JPH_BodyCreationSettings* settings, JPH_OverrideMassProperties value);
+
+JPH_CAPI float JPH_BodyCreationSettings_GetInertiaMultiplier(JPH_BodyCreationSettings* settings);
+JPH_CAPI void JPH_BodyCreationSettings_SetInertiaMultiplier(JPH_BodyCreationSettings* settings, float value);
+
+JPH_CAPI void JPH_BodyCreationSettings_GetMassPropertiesOverride(JPH_BodyCreationSettings* settings, JPH_MassProperties* result);
+JPH_CAPI void JPH_BodyCreationSettings_SetMassPropertiesOverride(JPH_BodyCreationSettings* settings, const JPH_MassProperties* value);
 
 /* JPH_SoftBodyCreationSettings */
 JPH_CAPI JPH_SoftBodyCreationSettings* JPH_SoftBodyCreationSettings_Create(void);
