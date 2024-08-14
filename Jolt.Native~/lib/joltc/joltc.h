@@ -440,6 +440,7 @@ typedef struct JPH_ConvexShape                  JPH_ConvexShape;
 typedef struct JPH_SphereShape                  JPH_SphereShape;
 typedef struct JPH_BoxShape                     JPH_BoxShape;
 typedef struct JPH_CapsuleShape                 JPH_CapsuleShape;
+typedef struct JPH_TaperedCapsuleShape          JPH_TaperedCapsuleShape;
 typedef struct JPH_CylinderShape                JPH_CylinderShape;
 typedef struct JPH_ConvexHullShape              JPH_ConvexHullShape;
 typedef struct JPH_CompoundShape                JPH_CompoundShape;
@@ -713,6 +714,7 @@ JPH_CAPI uint32_t JPH_HeightFieldShapeSettings_CalculateBitsPerSampleForError(co
 
 /* TaperedCapsuleShape */
 JPH_CAPI JPH_TaperedCapsuleShapeSettings* JPH_TaperedCapsuleShapeSettings_Create(float halfHeightOfTaperedCylinder, float topRadius, float bottomRadius);
+JPH_CAPI JPH_TaperedCapsuleShape* JPH_TaperedCapsuleShapeSettings_CreateShape(const JPH_TaperedCapsuleShapeSettings* settings);
 
 /* CompoundShape */
 JPH_CAPI void JPH_CompoundShapeSettings_AddShape(JPH_CompoundShapeSettings* settings, const JPH_Vec3* position, const JPH_Quat* rotation, const JPH_ShapeSettings* shape, uint32_t userData);

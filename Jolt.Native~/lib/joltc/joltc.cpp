@@ -1131,6 +1131,17 @@ JPH_TaperedCapsuleShapeSettings* JPH_TaperedCapsuleShapeSettings_Create(float ha
     return reinterpret_cast<JPH_TaperedCapsuleShapeSettings*>(settings);
 }
 
+JPH_TaperedCapsuleShape* JPH_TaperedCapsuleShapeSettings_CreateShape(const JPH_TaperedCapsuleShapeSettings* settings)
+{
+    const JPH::TaperedCapsuleShapeSettings* jolt_settings = reinterpret_cast<const JPH::TaperedCapsuleShapeSettings*>(settings);
+    auto shape_res = jolt_settings->Create();
+
+    auto shape = shape_res.Get().GetPtr();
+    shape->AddRef();
+
+    return reinterpret_cast<JPH_TaperedCapsuleShape*>(shape);
+}
+
 /* CompoundShape */
 void JPH_CompoundShapeSettings_AddShape(JPH_CompoundShapeSettings* settings, const JPH_Vec3* position, const JPH_Quat* rotation, const JPH_ShapeSettings* shape, uint32_t userData)
 {
