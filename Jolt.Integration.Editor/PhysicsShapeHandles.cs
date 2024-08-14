@@ -6,12 +6,25 @@ namespace Jolt.Integration
 {
     public static class PhysicsShapeHandles
     {
-        private static readonly Color HandleColor = new Color(0.7f, 1f, 0.5f);
+        private static Color HandleColor = new Color(0.7f, 1f, 0.5f);
 
         public static void StartHandle(float3 position, quaternion rotation)
         {
             Handles.color = HandleColor;
             Handles.matrix = Matrix4x4.TRS(position, rotation, Vector3.one);
+        }
+        
+        public static void StartHandle(float3 position, quaternion rotation, Color color)
+        {
+            HandleColor = color;
+            Handles.color = HandleColor;
+            Handles.matrix = Matrix4x4.TRS(position, rotation, Vector3.one);
+        }
+        
+        public static void SetColor(Color color)
+        {
+            HandleColor = color;
+            Handles.color = HandleColor;
         }
 
         public static void ResetHandle()

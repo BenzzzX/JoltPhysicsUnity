@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Jolt.Integration
 {
+    [RequireComponent(typeof(PhysicsBody))]
     public class PhysicsShapeRotatedTranslated : MonoBehaviour, IPhysicsShapeComponent
     {
         public ShapeSettings ShapeSettings
@@ -17,7 +18,7 @@ namespace Jolt.Integration
                     var child = transform.GetChild(i);
 
                     childBody = child.GetComponent<IPhysicsShapeComponent>();
-                    if (childBody != null)
+                    if (childBody != null && child.GetComponent<PhysicsBody>() == null)
                     {
                         translation = child.localPosition;
                         rotation = child.localRotation;
