@@ -44,7 +44,7 @@ namespace Jolt.Integration
             using (var lockA = locker.LockRead(bodyID.Value))
             using (var lockB = locker.LockRead(connectedBodyID.Value))
             {
-                constraint = settings.CreateConstraint(lockA.Body, lockB.Body);
+                constraint = settings.CreateConstraint(lockB.Body, lockA.Body);
                 system.AddConstraint(constraint.Value);
             }
         }

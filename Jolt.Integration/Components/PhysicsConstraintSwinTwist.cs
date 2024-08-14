@@ -73,10 +73,10 @@ namespace Jolt.Integration
             settings.SetSwingMotorSettings(SwingMotorSettings);
             settings.SetTwistMotorSettings(TwistMotorSettings);
             var locker = system.GetBodyLockInterfaceNoLock();
-            using var lockA = locker.LockRead(connectedBodyID.Value);
+            using var lockB = locker.LockRead(connectedBodyID.Value);
             System.Diagnostics.Debug.Assert(bodyID != null, nameof(bodyID) + " != null");
-            using var lockB = locker.LockRead(bodyID.Value);
-            constraint = settings.CreateConstraint(lockA.Body, lockB.Body);
+            using var lockA = locker.LockRead(bodyID.Value);
+            constraint = settings.CreateConstraint(lockB.Body, lockA.Body);
             system.AddConstraint(constraint.Value);
         }
     }
