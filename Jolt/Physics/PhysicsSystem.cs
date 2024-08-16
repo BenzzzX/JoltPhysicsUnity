@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using static Jolt.Bindings;
 
 namespace Jolt
 {
-    [GenerateHandle]
+    [GenerateHandle, GenerateBindings("JPH_PhysicsSystem")]
     public partial struct PhysicsSystem : IDisposable
     {
         internal readonly NativeHandle<JPH_PhysicsSystem> Handle;
@@ -28,9 +32,18 @@ namespace Jolt
         /// </summary>
         public ObjectVsBroadPhaseLayerFilter ObjectVsBroadPhaseLayerFilter;
 
-        public PhysicsSystem(PhysicsSystemSettings settings)
+        internal PhysicsSystem(PhysicsSystemSettings settings)
         {
-            Handle = JPH_PhysicsSystem_Create(settings);
+            var nativeSettings = new JPH_PhysicsSystemSettings
+            {
+                maxBodies = settings.MaxBodies,
+                maxBodyPairs = settings.MaxBodyPairs,
+                maxContactConstraints = settings.MaxContactConstraints,
+                objectLayerPairFilter = settings.ObjectLayerPairFilter.Handle,
+                broadPhaseLayerInterface = settings.BroadPhaseLayerInterface.Handle,
+                objectVsBroadPhaseLayerFilter = settings.ObjectVsBroadPhaseLayerFilter.Handle
+            };
+            Handle = JPH_PhysicsSystem_Create(nativeSettings);
 
             ObjectLayerPairFilter = settings.ObjectLayerPairFilter;
 
@@ -46,68 +59,92 @@ namespace Jolt
 
             JPH_PhysicsSystem_SetBodyActivationListener(Handle, BodyActivationListenerHandle);
         }
-
-        public void OptimizeBroadPhase()
+        
+        [OverrideBinding("JPH_PhysicsSystem_Create")]
+        public static PhysicsSystem Create(PhysicsSystemSettings settings)
         {
-            JPH_PhysicsSystem_OptimizeBroadPhase(Handle);
+            return new PhysicsSystem(settings);
         }
-
-        /// <summary>
-        /// Get the body interface, which allows creating and removing bodies and changing their properties.
-        /// </summary>
+        
+        [OverrideBinding("JPH_PhysicsSystem_GetBodyInterface")]
         public BodyInterface GetBodyInterface()
         {
             return new BodyInterface(JPH_PhysicsSystem_GetBodyInterface(Handle));
         }
 
-        /// <summary>
-        /// Get a non-locking version of the body interface. Use with great care!
-        /// </summary>
+        [OverrideBinding("JPH_PhysicsSystem_GetBodyInterfaceNoLock")]
         public BodyInterface GetBodyInterfaceNoLock()
         {
             return new BodyInterface(JPH_PhysicsSystem_GetBodyInterfaceNoLock(Handle));
         }
         
+        [OverrideBinding("JPH_PhysicsSystem_GetBodyLockInterface")]
         public BodyLockInterface GetBodyLockInterface()
         {
             return new BodyLockInterface(JPH_PhysicsSystem_GetBodyLockInterface(Handle));
         }
         
+        [OverrideBinding("JPH_PhysicsSystem_GetBodyLockInterfaceNoLock")]
         public BodyLockInterface GetBodyLockInterfaceNoLock()
         {
             return new BodyLockInterface(JPH_PhysicsSystem_GetBodyLockInterfaceNoLock(Handle));
         }
         
+        [OverrideBinding("JPH_PhysicsSystem_AddConstraints")]
+        public unsafe void AddConstraints<T>(NativeArray<T> constraints) where T : struct, IConstraint
+        {
+            JPH_PhysicsSystem_AddConstraints(Handle, (JPH_Constraint**)constraints.GetUnsafePtr(), (uint)constraints.Length);
+        }
+        
+        [OverrideBinding("JPH_PhysicsSystem_RemoveConstraints")]
+        public unsafe void RemoveConstraints<T>(NativeArray<T> constraints) where T : struct, IConstraint
+        {
+            JPH_PhysicsSystem_RemoveConstraints(Handle, (JPH_Constraint**)constraints.GetUnsafePtr(), (uint)constraints.Length);
+        }
+        
+        [OverrideBinding("JPH_PhysicsSystem_GetConstraints")]
+        public unsafe void GetConstraints(NativeArray<Constraint> outConstraints)
+        {
+            JPH_PhysicsSystem_GetConstraints(Handle, (JPH_Constraint**)outConstraints.GetUnsafePtr(), (uint)outConstraints.Length);
+        }
+        
+        [OverrideBinding("JPH_PhysicsSystem_AddConstraint")]
         public void AddConstraint<T>(T constraint) where T : IConstraint
         {
             JPH_PhysicsSystem_AddConstraint(Handle, constraint.Handle.Reinterpret<JPH_Constraint>());
         }
         
+        [OverrideBinding("JPH_PhysicsSystem_RemoveConstraint")]
         public void RemoveConstraint<T>(T constraint) where T : IConstraint
         {
             JPH_PhysicsSystem_RemoveConstraint(Handle, constraint.Handle.Reinterpret<JPH_Constraint>());
         }
         
+        [OverrideBinding("JPH_PhysicsSystem_GetBroadPhaseQuery")]
         public BroadPhaseQuery GetBroadPhaseQuery()
         {
             return new BroadPhaseQuery(JPH_PhysicsSystem_GetBroadPhaseQuery(Handle));
         }
         
+        [OverrideBinding("JPH_PhysicsSystem_GetNarrowPhaseQuery")]
         public NarrowPhaseQuery GetNarrowPhaseQuery()
         {
             return new NarrowPhaseQuery(JPH_PhysicsSystem_GetNarrowPhaseQuery(Handle));
         }
         
+        [OverrideBinding("JPH_PhysicsSystem_GetNarrowPhaseQueryNoLock")]
         public NarrowPhaseQuery GetNarrowPhaseQueryNoLock()
         {
             return new NarrowPhaseQuery(JPH_PhysicsSystem_GetNarrowPhaseQueryNoLock(Handle));
         }
 
+        [OverrideBinding("JPH_PhysicsSystem_SetContactListener")]
         public void SetContactListener(IContactListener listener)
         {
             JPH_ContactListener_SetProcs(ContactListenerHandle, listener);
         }
 
+        [OverrideBinding("JPH_PhysicsSystem_SetBodyActivationListener")]
         public void SetBodyActivationListener(IBodyActivationListener listener)
         {
             JPH_BodyActivationListener_SetProcs(BodyActivationListenerHandle, listener);
@@ -123,22 +160,6 @@ namespace Jolt
         {
             return (error = JPH_PhysicsSystem_Step(Handle, deltaTime, collisionSteps)) == PhysicsUpdateError.None;
         }
-
-        /// <summary>
-        /// Get the current number of bodies in the body manager.
-        /// </summary>
-        public uint GetNumBodies()
-        {
-            return JPH_PhysicsSystem_GetNumBodies(Handle);
-        }
-
-        /// <summary>
-        /// Get the current number of active bodies in the body manager.
-        /// </summary>
-        public uint GetNumActiveBodies(BodyType type)
-        {
-            return JPH_PhysicsSystem_GetNumActiveBodies(Handle, type);
-        }
         
         public unsafe delegate float CombineRestitutionDelegate(JPH_Body* body1, uint* subShapeID1, JPH_Body* body2, uint* subShapeID2);
         public unsafe void SetCombineRestitution(CombineRestitutionDelegate combineRestitution)
@@ -147,31 +168,11 @@ namespace Jolt
             UnsafeBindings.JPH_PhysicsSystem_SetCombineRestitution(Handle, ptr);
         }
 
-        /// <summary>
-        /// Get the maximum number of bodies that this system supports.
-        /// </summary>
-        public uint GetMaxBodies()
-        {
-            return JPH_PhysicsSystem_GetMaxBodies(Handle);
-        }
-
-        public void SetGravity(float3 gravity)
-        {
-            JPH_PhysicsSystem_SetGravity(Handle, gravity);
-        }
-
-        public float3 GetGravity()
-        {
-            return JPH_PhysicsSystem_GetGravity(Handle);
-        }
-
         public void Dispose()
         {
-            JPH_PhysicsSystem_Destroy(Handle);
-
             JPH_ContactListener_Destroy(ContactListenerHandle);
-
             JPH_BodyActivationListener_Destroy(BodyActivationListenerHandle);
+            Destroy();
         }
     }
 }

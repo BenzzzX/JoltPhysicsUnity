@@ -43,7 +43,7 @@ namespace Jolt.Integration
         {
             if (collider is BoxCollider boxCollider)
             {
-                return BoxShapeSettings.Create(boxCollider.size / 2);
+                return BoxShapeSettings.Create(boxCollider.size / 2, boxCollider.contactOffset);
             }
             else if (collider is SphereCollider sphereCollider)
             {

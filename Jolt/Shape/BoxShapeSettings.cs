@@ -13,11 +13,5 @@ namespace Jolt
         {
             Handle = handle;
         }
-
-        [OverrideBinding("JPH_BoxShapeSettings_Create")]
-        public static BoxShapeSettings Create(float3 halfExtent, float convexRadius = PhysicsSettings.DefaultConvexRadius)
-        {
-            return new BoxShapeSettings(JPH_BoxShapeSettings_Create(halfExtent, convexRadius));
-        }
     }
 }

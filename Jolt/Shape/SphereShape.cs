@@ -11,11 +11,5 @@ namespace Jolt
         {
             Handle = handle;
         }
-
-        [OverrideBinding("JPH_SphereShape_Create")]
-        public static SphereShape Create(float radius)
-        {
-            return new SphereShape(JPH_SphereShape_Create(radius));
-        }
     }
 }

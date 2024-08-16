@@ -12,12 +12,6 @@ namespace Jolt
             Handle = handle;
         }
 
-        [OverrideBinding("JPH_DistanceConstraintSettings_Create")]
-        public static DistanceConstraintSettings Create()
-        {
-            return new DistanceConstraintSettings(Bindings.JPH_DistanceConstraintSettings_Create());
-        }
-
         void IDisposable.Dispose()
         {
             Destroy();

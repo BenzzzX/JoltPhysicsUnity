@@ -12,12 +12,6 @@ namespace Jolt
             Handle = handle;
         }
 
-        [OverrideBinding("JPH_SwingTwistConstraintSettings_Create")]
-        public static SwingTwistConstraintSettings Create()
-        {
-            return new SwingTwistConstraintSettings(Bindings.JPH_SwingTwistConstraintSettings_Create());
-        }
-
         void IDisposable.Dispose()
         {
             Destroy();

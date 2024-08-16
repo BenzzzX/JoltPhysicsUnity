@@ -25,13 +25,6 @@ namespace Jolt
             }
         }
 
-        [OverrideBinding("JPH_ConvexHullShapeSettings_CreateShape")]
-        public ConvexHullShape CreateShape()
-        {
-            return new ConvexHullShape(JPH_ConvexHullShapeSettings_CreateShape(Handle));
-        }
-
-
         public void Dispose()
         {
             Destroy();

@@ -11,11 +11,5 @@ namespace Jolt
         {
             Handle = handle;
         }
-
-        [OverrideBinding("JPH_CapsuleShape_Create")]
-        public static CapsuleShape Create(float halfHeightOfCylinder, float radius)
-        {
-            return new CapsuleShape(JPH_CapsuleShape_Create(halfHeightOfCylinder, radius));
-        }
     }
 }

@@ -27,12 +27,6 @@ namespace Jolt
         {
             Handle = handle;
         }
-        
-        [OverrideBinding("JPH_ObjectLayerPairFilterMask_Create")]
-        public static ObjectLayerPairFilterMask Create()
-        {
-            return new ObjectLayerPairFilterMask(JPH_ObjectLayerPairFilterMask_Create());
-        }
 
         /// <summary>
         /// Implicit reinterpret cast as a base ObjectLayerPairFilter.

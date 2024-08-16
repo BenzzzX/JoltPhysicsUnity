@@ -12,7 +12,7 @@ namespace Jolt
         {
             Handle = handle;
         }
-
+        
         [OverrideBinding("JPH_ObjectLayerPairFilterTable_Create")]
         public static ObjectLayerPairFilterTable Create(uint numLayers)
         {

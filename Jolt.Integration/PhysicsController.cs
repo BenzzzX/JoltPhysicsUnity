@@ -209,7 +209,7 @@ namespace Jolt.Integration
                 ObjectVsBroadPhaseLayerFilter = objectVsBroadPhaseLayerFilter,
             };
 
-            system = new PhysicsSystem(settings);
+            system = PhysicsSystem.Create(settings);
             bodies = system.GetBodyInterface();
             bodiesNoLock = system.GetBodyInterfaceNoLock();
             bodyLockNoLock = system.GetBodyLockInterfaceNoLock();

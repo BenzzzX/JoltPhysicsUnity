@@ -11,11 +11,5 @@ namespace Jolt
         {
             Handle = handle;
         }
-
-        [OverrideBinding("JPH_CylinderShape_Create")]
-        public static CylinderShape Create(float halfHeightOfCylinder, float radius)
-        {
-            return new CylinderShape(JPH_CylinderShape_Create(halfHeightOfCylinder, radius));
-        }
     }
 }

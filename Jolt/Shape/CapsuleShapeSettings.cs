@@ -12,12 +12,6 @@ namespace Jolt
         {
             Handle = handle;
         }
-
-        [OverrideBinding("JPH_CapsuleShapeSettings_Create")]
-        public static CapsuleShapeSettings Create(float halfHeightOfCylinder, float radius)
-        {
-            return new CapsuleShapeSettings(JPH_CapsuleShapeSettings_Create(halfHeightOfCylinder, radius));
-        }
         
         void IDisposable.Dispose()
         {

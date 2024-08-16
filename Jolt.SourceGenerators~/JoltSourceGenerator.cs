@@ -231,6 +231,7 @@ internal class JoltSourceGenerator : ISourceGenerator
             string proxyReturn = "";
             int outParamCount = 0;
             bool isStatic = true;
+            bool hasPointerPointer = false;
             ParameterSyntax outParameter = null;
 
             for (int i = 0; i < b.BindingDeclaration.ParameterList.Parameters.Count; i++)
@@ -257,8 +258,10 @@ internal class JoltSourceGenerator : ISourceGenerator
                 }
                 var isArrayPointer = nativeTypeName.EndsWith("[]");
                 var type = p.Type.ToString();
+                var isPointerPointer = type.EndsWith("**");
+                hasPointerPointer = hasPointerPointer || isPointerPointer;
                 var name = p.Identifier.ValueText;
-                var isPointer = p.Type.IsKind(SyntaxKind.PointerType) && !isArrayPointer;
+                var isPointer = p.Type.IsKind(SyntaxKind.PointerType) && !isArrayPointer && !isPointerPointer;
                 var isValueType = isPointer ? ValueTypeNames.Contains(type.Substring(0, type.Length - 1)) : ValueTypeNames.Contains(type);
                 bool isSelf = false;
                 if (i == 0 && isPointer && !isValueType)
@@ -390,7 +393,7 @@ internal class JoltSourceGenerator : ISourceGenerator
                     proxyReturn = type;
                 }
             }
-            var modifier = isStatic ? "static " : "";
+            var modifier = (isStatic ? "static " : "") + (hasPointerPointer ? "unsafe " : "");
             if(b.BindingMethodName == "GetType")
             {
                 modifier = "new " + modifier;

@@ -12,12 +12,6 @@ namespace Jolt
             Handle = handle;
         }
 
-        [OverrideBinding("JPH_FixedConstraintSettings_Create")]
-        public static FixedConstraintSettings Create()
-        {
-            return new FixedConstraintSettings(Bindings.JPH_FixedConstraintSettings_Create());
-        }
-
         void IDisposable.Dispose()
         {
             Destroy();

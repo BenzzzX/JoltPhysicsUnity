@@ -17,12 +17,6 @@ namespace Jolt
             return new ConstraintSettings(settings.Handle.Reinterpret<JPH_ConstraintSettings>());
         }
 
-        [OverrideBinding("JPH_HingeConstraintSettings_Create")]
-        public static HingeConstraintSettings Create()
-        {
-            return new HingeConstraintSettings(Bindings.JPH_HingeConstraintSettings_Create());
-        }
-
         void IDisposable.Dispose()
         {
             Destroy();

@@ -19,11 +19,5 @@ namespace Jolt
         {
             return new BroadPhaseLayerInterface(mask.Handle);
         }
-
-        [OverrideBinding("JPH_BroadPhaseLayerInterfaceMask_Create")]
-        public static BroadPhaseLayerInterfaceMask Create(uint numBroadPhaseLayers)
-        {
-            return new BroadPhaseLayerInterfaceMask(JPH_BroadPhaseLayerInterfaceMask_Create(numBroadPhaseLayers));
-        }
     }
 }

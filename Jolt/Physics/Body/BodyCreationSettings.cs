@@ -14,12 +14,6 @@ namespace Jolt
             Handle = handle;
         }
 
-        [OverrideBinding("JPH_BodyCreationSettings_Create")]
-        public static BodyCreationSettings Create()
-        {
-            return new BodyCreationSettings(JPH_BodyCreationSettings_Create());
-        }
-
         [OverrideBinding("JPH_BodyCreationSettings_Create2")]
         public static BodyCreationSettings FromShapeSettings(ShapeSettings settings, rvec3 position, quaternion rotation, MotionType motion, ushort layer)
         {
