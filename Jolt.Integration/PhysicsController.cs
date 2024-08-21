@@ -264,7 +264,7 @@ namespace Jolt.Integration
                 }
             }
             pendingDestroy.Clear();
-
+            pendingSpawn.RemoveAll(x => x == null);
             if (!bodyIds.IsCreated)
             {
                 bodyIds = new NativeList<BodyID>(pendingSpawn.Count, Allocator.Persistent);
