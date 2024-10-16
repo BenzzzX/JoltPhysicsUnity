@@ -43,7 +43,7 @@ namespace Jolt
             OnContactPersisted = Marshal.GetFunctionPointerForDelegate((UnsafeContactPersisted) UnsafeContactPersistedCallback),
         };
 
-        private delegate ValidateResult UnsafeContactValidate(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB, double3* offset, JPH_CollideShapeResult* result);
+        private delegate ValidateResult UnsafeContactValidate(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB, rvec3* offset, JPH_CollideShapeResult* result);
 
         private delegate void UnsafeContactAdded(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB, JPH_ContactManifold* manifold, JPH_ContactSettings* settings);
 
@@ -51,7 +51,7 @@ namespace Jolt
 
         private delegate void UnsafeContactRemoved(IntPtr udata, JPH_SubShapeIDPair* pair);
 
-        private static ValidateResult UnsafeContactValidateCallback(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB, double3* offset, JPH_CollideShapeResult* result)
+        private static ValidateResult UnsafeContactValidateCallback(IntPtr udata, JPH_Body* bodyA, JPH_Body* bodyB, rvec3* offset, JPH_CollideShapeResult* result)
         {
             try
             {

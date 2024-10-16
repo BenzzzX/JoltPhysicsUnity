@@ -32,7 +32,7 @@ namespace Jolt.Integration
             }
         }
 
-        public ValidateResult OnContactValidate(Body bodyA, Body bodyB, double3 offset, ref JPH_CollideShapeResult result)
+        public ValidateResult OnContactValidate(Body bodyA, Body bodyB, rvec3 offset, ref JPH_CollideShapeResult result)
         {
             Debug.Log("OnContactValidate");
 
