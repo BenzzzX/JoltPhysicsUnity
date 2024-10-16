@@ -54,12 +54,12 @@ namespace Jolt.Integration
             }
         }
 
-        void IContactListener.OnContactAdded(Body bodyA, Body bodyB, ContactSettings settings)
+        void IContactListener.OnContactAdded(Body bodyA, Body bodyB, ContactManifold manifold, ContactSettings settings)
         {
             TryAddVelocity(bodyA, bodyB, settings);
         }
 
-        public void OnContactPersisted(Body bodyA, Body bodyB, ContactSettings settings)
+        public void OnContactPersisted(Body bodyA, Body bodyB, ContactManifold manifold, ContactSettings settings)
         {
             TryAddVelocity(bodyA, bodyB, settings);
         }

@@ -74,6 +74,7 @@ namespace Jolt
             {
                 managedContactListeners[udata]?.OnContactAdded(new Body(NativeHandle<JPH_Body>.CreateObserveHandle(bodyA)), 
                     new Body(NativeHandle<JPH_Body>.CreateObserveHandle(bodyB)), 
+                    new ContactManifold(NativeHandle<JPH_ContactManifold>.CreateObserveHandle(manifold)),
                     new ContactSettings(NativeHandle<JPH_ContactSettings>.CreateObserveHandle(settings)));
             }
             catch (Exception e)
@@ -100,6 +101,7 @@ namespace Jolt
             {
                 managedContactListeners[udata]?.OnContactPersisted(new Body(NativeHandle<JPH_Body>.CreateObserveHandle(bodyA)), 
                     new Body(NativeHandle<JPH_Body>.CreateObserveHandle(bodyB)), 
+                    new ContactManifold(NativeHandle<JPH_ContactManifold>.CreateObserveHandle(manifold)),
                     new ContactSettings(NativeHandle<JPH_ContactSettings>.CreateObserveHandle(settings)));
             }
             catch (Exception e)
